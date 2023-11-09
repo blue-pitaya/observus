@@ -1,24 +1,49 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import {
+  mapState,
+  mapSignal,
+  state,
+  observeSignal,
+  updateState,
+  combineSignals,
+  toSignal,
+  updateMany,
+} from "./ca";
+import { text, tag, attr, on } from "./ct";
+import "./style.css";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const a = state(10);
+const b = state(3);
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const c = mapState(a, (x) => x + 1);
+const d = mapSignal(c, (x) => x * 2);
+const e = combineSignals(d, toSignal(b), (x, y) => x - y);
+
+observeSignal(e, (x) => console.log(x));
+
+updateState(a, () => 2);
+updateState(b, () => 5);
+
+updateMany([
+  { signal: a, f: (_) => 20 },
+  { signal: b, f: (_) => 2 },
+]);
+
+function createTODOList() {
+  const color = state("red");
+  const styleValue = mapState(color, (c) => `color: ${c}`);
+
+  return tag(
+    "div",
+    tag("p", attr("style", styleValue), text(e)),
+    tag(
+      "button",
+      on("click", () => {
+        updateState(color, (v) => (v == "red" ? "blue" : "red"));
+      }),
+      text("Change color"),
+    ),
+  );
+}
+
+const todoList = createTODOList();
+document.getElementById("app")!.appendChild(todoList);
