@@ -1,5 +1,5 @@
 import { state, combine, updateMany, State, Signal, observe } from "./ca";
-import { text, tag, on, attr } from "./ct";
+import { text, tag, on, attr, tagSignal } from "./ct";
 import "./style.css";
 
 const a = state(10);
@@ -73,12 +73,71 @@ const Stopwatch = () => {
   );
 };
 
+interface TodoItem {
+  name: string;
+  done: boolean;
+}
+
+function ViewToggle1(): HTMLElement {
+  const count = state(0);
+  const View1 = () =>
+    tag(
+      "span",
+      attr("style", "color: red;"),
+      text(count.map((x) => x.toString())),
+    );
+  const View2 = () =>
+    tag(
+      "span",
+      attr("style", "color: blue;"),
+      text(count.map((x) => x.toString())),
+    );
+
+  const showView1 = state(true);
+  const currentView = showView1.map((v) => (v ? View1() : View2()));
+
+  return tag(
+    "div",
+    tagSignal(currentView),
+    tag(
+      "button",
+      text("Switch view"),
+      on("click", () => {
+        showView1.update((v) => !v);
+      }),
+    ),
+    tag(
+      "button",
+      text("Increment counter"),
+      on("click", () => {
+        count.update((x) => x + 1);
+        console.log(count.links.length); //TODO: counter links are not cleared
+      }),
+    ),
+  );
+}
+
 function TodoList(): HTMLElement {
-  return tag("div");
+  const items = state<Array<State<TodoItem>>>([]); // state can be nested
+
+  const addTodo = () => {};
+
+  return tag(
+    "div",
+    tag("input", attr("type", "text")),
+    tag("button", text("Add"), on("click", addTodo)),
+  );
 }
 
 function App(): HTMLElement {
-  return tag("div", Example(), Stopwatch(), TodoList());
+  return tag(
+    "div",
+    attr("style", "display: flex; flex-direction: column; gap: 24px;"),
+    Example(),
+    Stopwatch(),
+    ViewToggle1(),
+    TodoList(),
+  );
 }
 
 const app = App();

@@ -1,4 +1,4 @@
-import { Signal, observe } from "./ca";
+import { Signal, observe, state } from "./ca";
 
 interface AttrSetter {
   kind: "AttrSetter";
@@ -18,12 +18,18 @@ interface EventListenerSetter {
   options?: boolean | AddEventListenerOptions;
 }
 
+interface TagSignalSetter {
+  kind: "TagSignalSetter";
+  value: Signal<Element>;
+}
+
 type Tag =
   | HTMLElement
   | SVGElement
   | TextSetter
   | AttrSetter
-  | EventListenerSetter;
+  | EventListenerSetter
+  | TagSignalSetter;
 
 // setAttributeNS may be necessary for svg elements
 function createTag(
@@ -57,6 +63,17 @@ function createTag(
         }
       } else if (child.kind == "EventListenerSetter") {
         result.addEventListener(child.type, child.listener, child.options);
+      } else if (child.kind == "TagSignalSetter") {
+        //TODO: clear event listeners and observables on children
+        let lastValue: Element | null = null;
+        observe(child.value, (el) => {
+          if (lastValue !== null) {
+            result.replaceChild(el, lastValue);
+          } else {
+            result.appendChild(el);
+          }
+          lastValue = el;
+        });
       }
     } else {
       result.appendChild(child);
@@ -65,6 +82,8 @@ function createTag(
 
   return result;
 }
+
+//TODO: updateRef (to update in imperativ fashion)
 
 export const tag = (name: string, ...children: Array<Tag>) =>
   createTag(name, false, ...children) as HTMLElement;
@@ -91,4 +110,8 @@ export const on = (
   type,
   listener,
   options,
+});
+export const tagSignal = (value: Signal<Element>): TagSignalSetter => ({
+  kind: "TagSignalSetter",
+  value,
 });

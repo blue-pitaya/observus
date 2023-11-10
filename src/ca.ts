@@ -1,3 +1,4 @@
+//TODO: maybe State should extends Signal?
 export interface State<A> {
   currentValue: A;
   links: Array<Observer>;
