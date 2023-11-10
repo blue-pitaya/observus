@@ -1,72 +1,93 @@
-export interface Observable {
-  currentValue: any;
+export interface State<A> {
+  currentValue: A;
   links: Array<Observer>;
+  map: <B>(f: (v: A) => B) => Signal<B>;
+  update: (f: (v: A) => A) => void;
+  signal: () => Signal<A>;
 }
 
 export interface Observer {
   next: () => void;
 }
 
-export interface Signal {
-  sources: Array<Observable>;
-  getValue: () => any;
+export interface Signal<A> {
+  sources: Array<State<any>>;
+  getValue: () => A;
+  map: <B>(f: (v: A) => B) => Signal<B>;
 }
 
-export function state(initialValue: any): Observable {
-  return { currentValue: initialValue, links: [] };
-}
-
-export function mapState(s: Observable, f: (v: any) => any): Signal {
+function mapState<A, B>(s: State<A>, f: (v: A) => B): Signal<B> {
   return {
     sources: [s],
     getValue: () => f(s.currentValue),
+    map(f) {
+      return mapSignal(this, f);
+    },
   };
 }
 
 // can lead to stackoverflow if too many mappings
-export function mapSignal(s: Signal, f: (v: any) => any): Signal {
+function mapSignal<A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> {
   return {
     ...s,
     getValue: () => f(s.getValue()),
+    map: function <C>(g: (v: B) => C): Signal<C> {
+      return mapSignal(this, g);
+    },
   };
 }
 
-export function observeState(s: Observable, next: (v: any) => void) {
-  const observer: Observer = { next: () => next(s.currentValue) };
-  s.links.push(observer);
-  observer.next();
-}
-
-export function observeSignal(s: Signal, next: (v: any) => void) {
-  const observer: Observer = {
-    next: () => next(s.getValue()),
+export function state<A>(initialValue: A): State<A> {
+  return {
+    currentValue: initialValue,
+    links: [],
+    map(f) {
+      return mapState(this, f);
+    },
+    update(f) {
+      this.currentValue = f(this.currentValue);
+      this.links.forEach((link) => link.next());
+    },
+    signal() {
+      return mapState(this, (x) => x);
+    },
   };
-  s.sources.forEach((source) => source.links.push(observer));
-  observer.next();
 }
 
-export function updateState(s: Observable, f: (v: any) => any) {
-  s.currentValue = f(s.currentValue);
-  s.links.forEach((link) => link.next());
+export function observe<A>(s: State<A> | Signal<A>, next: (v: A) => void) {
+  if ("currentValue" in s) {
+    const observer: Observer = { next: () => next(s.currentValue) };
+    s.links.push(observer);
+    observer.next();
+  } else {
+    const observer: Observer = {
+      next: () => next(s.getValue()),
+    };
+    s.sources.forEach((source) => source.links.push(observer));
+    observer.next();
+  }
 }
 
-export function toSignal(s: Observable): Signal {
-  return mapState(s, (x) => x);
-}
-
-export function combineSignals(
-  sa: Signal,
-  sb: Signal,
-  f: (a: any, b: any) => any,
-): Signal {
+//TODO: allow more than 2 signals
+//levae this function typed, and add combineMany without strict types
+export function combine<A, B, C>(
+  sa: Signal<A>,
+  sb: Signal<B>,
+  mapping: (a: A, b: B) => C,
+): Signal<C> {
   return {
     sources: [...sa.sources, ...sb.sources],
-    getValue: () => f(sa.getValue(), sb.getValue()),
+    getValue: () => mapping(sa.getValue(), sb.getValue()),
+    map(f) {
+      return mapSignal(this, f);
+    },
   };
 }
 
+//TODO: withValueOf(signal)
+
 export function updateMany(
-  updates: Array<{ signal: Observable; f: (v: any) => any }>,
+  updates: Array<{ signal: State<any>; f: (v: any) => any }>,
 ) {
   let observersToUpdate: Set<Observer> = new Set();
   updates.forEach((u) => {

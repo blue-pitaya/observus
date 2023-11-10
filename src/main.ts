@@ -1,49 +1,47 @@
-import {
-  mapState,
-  mapSignal,
-  state,
-  observeSignal,
-  updateState,
-  combineSignals,
-  toSignal,
-  updateMany,
-} from "./ca";
-import { text, tag, attr, on } from "./ct";
+import { state, combine, updateMany, State, Signal, observe } from "./ca";
+import { text, tag, on } from "./ct";
 import "./style.css";
 
 const a = state(10);
 const b = state(3);
 
-const c = mapState(a, (x) => x + 1);
-const d = mapSignal(c, (x) => x * 2);
-const e = combineSignals(d, toSignal(b), (x, y) => x - y);
+const c = a.map((x) => x + 1);
+const d = c.map((x) => x * 2);
+const e = combine(d, b.signal(), (x, y) => x - y);
 
-observeSignal(e, (x) => console.log(x));
+observe(e, (x) => console.log(x));
 
-updateState(a, () => 2);
-updateState(b, () => 5);
+a.update((x) => x + 2);
+b.update(() => 5);
 
 updateMany([
-  { signal: a, f: (_) => 20 },
-  { signal: b, f: (_) => 2 },
+  { signal: a, f: () => 20 },
+  { signal: b, f: () => 2 },
 ]);
 
-function createTODOList() {
-  const color = state("red");
-  const styleValue = mapState(color, (c) => `color: ${c}`);
+function createExample(): HTMLElement {
+  const verbs: Array<string> = ["watching", "observing", "seeing"];
+  const verbIdx: State<number> = state(0);
+  const message: Signal<string> = verbIdx.map((i) => `I'm ${verbs[i]} you.`);
 
   return tag(
     "div",
-    tag("p", attr("style", styleValue), text(e)),
+    tag("p", text("There will be observus mini logo")),
+    tag("p", text(message)),
     tag(
       "button",
+      text("Look at me more!"),
       on("click", () => {
-        updateState(color, (v) => (v == "red" ? "blue" : "red"));
+        verbIdx.update((i) => (i + 1 >= verbs.length ? 0 : i + 1));
       }),
-      text("Change color"),
     ),
   );
 }
 
-const todoList = createTODOList();
-document.getElementById("app")!.appendChild(todoList);
+function createApp(): HTMLElement {
+  const example = createExample();
+  return example;
+}
+
+const app = createApp();
+document.getElementById("app")!.appendChild(app);

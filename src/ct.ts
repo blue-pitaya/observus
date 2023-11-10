@@ -1,14 +1,14 @@
-import { Signal, observeSignal } from "./ca";
+import { Signal, observe } from "./ca";
 
 interface AttrSetter {
   kind: "AttrSetter";
   name: string;
-  value: string | Signal;
+  value: string | Signal<string>;
 }
 
 interface TextSetter {
   kind: "TextSetter";
-  value: string | Signal;
+  value: string | Signal<string>;
 }
 
 interface EventListenerSetter {
@@ -43,7 +43,7 @@ function createTag(
         } else {
           const textNode = document.createTextNode(child.value.getValue());
           result.appendChild(textNode);
-          observeSignal(child.value, (v) => {
+          observe(child.value, (v) => {
             textNode.nodeValue = v;
           });
         }
@@ -51,7 +51,7 @@ function createTag(
         if (typeof child.value == "string") {
           result.setAttribute(child.name, child.value);
         } else {
-          observeSignal(child.value, (v) => {
+          observe(child.value, (v) => {
             result.setAttribute(child.name, v);
           });
         }
@@ -70,11 +70,14 @@ export const tag = (name: string, ...children: Array<Tag>) =>
   createTag(name, false, ...children) as HTMLElement;
 export const svgTag = (name: string, ...children: Array<Tag>) =>
   createTag(name, true, ...children) as SVGElement;
-export const text = (value: string | Signal): TextSetter => ({
+export const text = (value: string | Signal<string>): TextSetter => ({
   kind: "TextSetter",
   value,
 });
-export const attr = (name: string, value: string | Signal): AttrSetter => ({
+export const attr = (
+  name: string,
+  value: string | Signal<string>,
+): AttrSetter => ({
   kind: "AttrSetter",
   name,
   value,
