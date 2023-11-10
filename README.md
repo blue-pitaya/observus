@@ -14,3 +14,6 @@
 - beforeRouteLeave
 
 # Make comparasion with React for soydevs
+
+# Rules
+- Do not reuse components

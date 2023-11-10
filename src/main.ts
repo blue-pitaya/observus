@@ -1,5 +1,5 @@
 import { state, combine, updateMany, State, Signal, observe } from "./ca";
-import { text, tag, on } from "./ct";
+import { text, tag, on, attr } from "./ct";
 import "./style.css";
 
 const a = state(10);
@@ -19,7 +19,7 @@ updateMany([
   { signal: b, f: () => 2 },
 ]);
 
-function createExample(): HTMLElement {
+function Example(): HTMLElement {
   const verbs: Array<string> = ["watching", "observing", "seeing"];
   const verbIdx: State<number> = state(0);
   const message: Signal<string> = verbIdx.map((i) => `I'm ${verbs[i]} you.`);
@@ -38,10 +38,48 @@ function createExample(): HTMLElement {
   );
 }
 
-function createApp(): HTMLElement {
-  const example = createExample();
-  return example;
+const Stopwatch = () => {
+  const elapsed = state(0);
+
+  let intervalId: number | null = null;
+  const start = () => {
+    if (intervalId === null) {
+      intervalId = setInterval(() => {
+        elapsed.update((v) => v + 0.1);
+      }, 100);
+    }
+  };
+  const stop = () => {
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+  const reset = () => {
+    stop();
+    elapsed.update(() => 0);
+  };
+
+  return tag(
+    "div",
+    tag(
+      "pre",
+      attr("style", "display: inline;"),
+      text(elapsed.map((s) => `${s.toFixed(1)} seconds`)),
+    ),
+    tag("button", text("Start"), on("click", start)),
+    tag("button", text("Stop"), on("click", stop)),
+    tag("button", text("Reset"), on("click", reset)),
+  );
+};
+
+function TodoList(): HTMLElement {
+  return tag("div");
 }
 
-const app = createApp();
+function App(): HTMLElement {
+  return tag("div", Example(), Stopwatch(), TodoList());
+}
+
+const app = App();
 document.getElementById("app")!.appendChild(app);
