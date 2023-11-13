@@ -1,6 +1,7 @@
 import { state, combine, updateMany, State, Signal, observe } from "./ca";
 import { text, tag, on, attr, tagSignal } from "./ct";
 import "./style.css";
+import { TodoList } from "./todoListExample";
 
 const a = state(10);
 const b = state(3);
@@ -73,28 +74,21 @@ const Stopwatch = () => {
   );
 };
 
-interface TodoItem {
-  name: string;
-  done: boolean;
-}
-
 function ViewToggle1(): HTMLElement {
   const count = state(0);
-  const View1 = () =>
-    tag(
-      "span",
-      attr("style", "color: red;"),
-      text(count.map((x) => x.toString())),
-    );
-  const View2 = () =>
-    tag(
-      "span",
-      attr("style", "color: blue;"),
-      text(count.map((x) => x.toString())),
-    );
+  const view1 = tag(
+    "span",
+    attr("style", "color: red;"),
+    text(count.map((x) => x.toString())),
+  );
+  const view2 = tag(
+    "span",
+    attr("style", "color: blue;"),
+    text(count.map((x) => x.toString())),
+  );
 
   const showView1 = state(true);
-  const currentView = showView1.map((v) => (v ? View1() : View2()));
+  const currentView = showView1.map((v) => (v ? view1 : view2));
 
   return tag(
     "div",
@@ -117,17 +111,7 @@ function ViewToggle1(): HTMLElement {
   );
 }
 
-function TodoList(): HTMLElement {
-  const items = state<Array<State<TodoItem>>>([]); // state can be nested
-
-  const addTodo = () => {};
-
-  return tag(
-    "div",
-    tag("input", attr("type", "text")),
-    tag("button", text("Add"), on("click", addTodo)),
-  );
-}
+//TODO: view toggle using hidden prop (safer?)
 
 function App(): HTMLElement {
   return tag(
@@ -136,6 +120,7 @@ function App(): HTMLElement {
     Example(),
     Stopwatch(),
     ViewToggle1(),
+    tag("h1", text("Todo lists")),
     TodoList(),
   );
 }
