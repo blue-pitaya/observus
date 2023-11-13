@@ -1,5 +1,4 @@
-import { state, combine, updateMany, State, Signal, observe } from "./ca";
-import { text, tag, on, attr, tagSignal } from "./ct";
+import { state, combine, updateMany, State, Signal, observe, text, tag, on, attr, tagSignal} from "./observus";
 import "./style.css";
 import { TodoList } from "./todoListExample";
 

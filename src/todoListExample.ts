@@ -1,5 +1,4 @@
-import { state, State } from "./ca";
-import { text, tag, on, attr, tagSignal } from "./ct";
+import { state, State, text, tag, on, attr, tagSignal } from "./observus";
 
 interface TodoItem {
   name: string;
