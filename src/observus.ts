@@ -1,4 +1,7 @@
 //TODO: maybe State should extends Signal?
+//State should be possible to add as Signal for attr etc
+//TODO: try to create flatMap on signal for sports
+//TODO: test for diamond problem
 export interface State<A> {
   currentValue: A;
   links: Array<Observer>;
@@ -38,7 +41,7 @@ function mapSignal<A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> {
   };
 }
 
-export function state<A>(initialValue: A): State<A> {
+export function createState<A>(initialValue: A): State<A> {
   return {
     currentValue: initialValue,
     links: [],
@@ -104,7 +107,7 @@ export function updateMany(
 interface AttrSetter {
   kind: "AttrSetter";
   name: string;
-  value: string | Signal<string>;
+  value: string | Signal<string | null>;
 }
 
 interface TextSetter {
@@ -159,7 +162,11 @@ function createTag(
           result.setAttribute(child.name, child.value);
         } else {
           observe(child.value, (v) => {
-            result.setAttribute(child.name, v);
+            if (v !== null) {
+              result.setAttribute(child.name, v);
+            } else {
+              result.removeAttribute(child.name);
+            }
           });
         }
       } else if (child.kind == "EventListenerSetter") {
@@ -194,9 +201,10 @@ export const text = (value: string | Signal<string>): TextSetter => ({
   kind: "TextSetter",
   value,
 });
+// TODO: for svg should add namespace?
 export const attr = (
   name: string,
-  value: string | Signal<string>,
+  value: string | Signal<string | null>,
 ): AttrSetter => ({
   kind: "AttrSetter",
   name,
@@ -204,7 +212,7 @@ export const attr = (
 });
 export const on = (
   type: string,
-  listener: EventListenerOrEventListenerObject,
+  listener: any,
   options?: boolean | AddEventListenerOptions,
 ): EventListenerSetter => ({
   kind: "EventListenerSetter",
@@ -216,3 +224,4 @@ export const tagSignal = (value: Signal<Element>): TagSignalSetter => ({
   kind: "TagSignalSetter",
   value,
 });
+
