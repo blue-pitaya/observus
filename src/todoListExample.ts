@@ -1,4 +1,4 @@
-import { state, State, text, tag, on, attr, tagSignal } from "./observus";
+import { createState, State, text, tag, on, attr, tagSignal } from "./observus";
 
 interface TodoItem {
   name: string;
@@ -20,7 +20,7 @@ function TodoItem(item: State<TodoItem>, remove: () => void): HTMLElement {
 }
 
 export function TodoList(): HTMLElement {
-  const itemsState = state<Array<State<TodoItem>>>([]); // state can be nested
+  const itemsState = createState<Array<State<TodoItem>>>([]); // state can be nested
 
   const inputField = tag("input", attr("type", "text")) as HTMLInputElement;
 
@@ -37,7 +37,7 @@ export function TodoList(): HTMLElement {
 
   const addTodo = () => {
     itemsState.update((vs) => {
-      vs.push(state<TodoItem>({ name: inputField.value, done: false }));
+      vs.push(createState<TodoItem>({ name: inputField.value, done: false }));
       return vs;
     });
   };

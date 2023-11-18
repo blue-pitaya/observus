@@ -4,6 +4,7 @@
 //TODO: test for diamond problem
 export interface State<A> {
   currentValue: A;
+  //TODO: rename: observers
   links: Array<Observer>;
   map: <B>(f: (v: A) => B) => Signal<B>;
   update: (f: (v: A) => A) => void;
@@ -11,10 +12,14 @@ export interface State<A> {
 }
 
 export interface Observer {
+  //flag for signals thath should not be fired on ceratin conditions
+  restricted?: boolean;
   next: () => void;
 }
 
 export interface Signal<A> {
+  //flag for signals thath should not be fired on ceratin conditions
+  restricted?: boolean;
   sources: Array<State<any>>;
   getValue: () => A;
   map: <B>(f: (v: A) => B) => Signal<B>;
@@ -58,15 +63,40 @@ export function createState<A>(initialValue: A): State<A> {
   };
 }
 
+/* Creates special signal that wont fire if state is updated using returned "update" function */
+export function createRestrictedSignal<A>(
+  s: State<A>,
+): [Signal<A>, (f: (v: A) => A) => void] {
+  const signal = s.signal();
+  signal.restricted = true;
+
+  const update = (f: (v: A) => A) => {
+    s.currentValue = f(s.currentValue);
+    s.links.forEach((observer) => {
+      if (!observer.restricted) {
+        observer.next();
+      }
+    });
+  };
+
+  return [signal, update];
+}
+
 export function observe<A>(s: State<A> | Signal<A>, next: (v: A) => void) {
   if ("currentValue" in s) {
+    //s is State
     const observer: Observer = { next: () => next(s.currentValue) };
     s.links.push(observer);
     observer.next();
   } else {
+    //s is Signal
     const observer: Observer = {
       next: () => next(s.getValue()),
     };
+    if (s.restricted) {
+      observer.restricted = true;
+    }
+
     s.sources.forEach((source) => source.links.push(observer));
     observer.next();
   }
@@ -88,7 +118,8 @@ export function combine<A, B, C>(
   };
 }
 
-//TODO: withValueOf(signal)
+//TODO: explain how withValueOf(signal) can be just accesess via getValue in map
+//note that this is an exception and maps should be made in "pure" manner
 
 export function updateMany(
   updates: Array<{ signal: State<any>; f: (v: any) => any }>,
@@ -101,6 +132,8 @@ export function updateMany(
 
   observersToUpdate.forEach((o) => o.next());
 }
+
+//export function
 
 // DOM building
 
@@ -158,13 +191,19 @@ function createTag(
           });
         }
       } else if (child.kind == "AttrSetter") {
+        //using property setting instead of setAttribute
+        //beacuse of some cases whre setAttribute dont update element
+        //like value in input.text
         if (typeof child.value == "string") {
-          result.setAttribute(child.name, child.value);
+          // @ts-ignore
+          result[child.name] = child.value;
         } else {
           observe(child.value, (v) => {
             if (v !== null) {
-              result.setAttribute(child.name, v);
+              // @ts-ignore
+              result[child.name] = v;
             } else {
+              // should work for all cases, i hope
               result.removeAttribute(child.name);
             }
           });
@@ -192,6 +231,7 @@ function createTag(
 }
 
 //TODO: updateRef (to update in imperativ fashion)
+//TODO: would be nice to allow tagSignal(value: Signal<Element[]>) to avoid surogate container
 
 export const tag = (name: string, ...children: Array<Tag>) =>
   createTag(name, false, ...children) as HTMLElement;
@@ -224,4 +264,3 @@ export const tagSignal = (value: Signal<Element>): TagSignalSetter => ({
   kind: "TagSignalSetter",
   value,
 });
-

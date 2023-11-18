@@ -1,9 +1,22 @@
-import { state, combine, updateMany, State, Signal, observe, text, tag, on, attr, tagSignal} from "./observus";
+import {
+  createState,
+  combine,
+  updateMany,
+  State,
+  Signal,
+  observe,
+  text,
+  tag,
+  on,
+  attr,
+  tagSignal,
+} from "./observus";
 import "./style.css";
+import { TextInputExample } from "./textInputExample";
 import { TodoList } from "./todoListExample";
 
-const a = state(10);
-const b = state(3);
+const a = createState(10);
+const b = createState(3);
 
 const c = a.map((x) => x + 1);
 const d = c.map((x) => x * 2);
@@ -21,7 +34,7 @@ updateMany([
 
 function Example(): HTMLElement {
   const verbs: Array<string> = ["watching", "observing", "seeing"];
-  const verbIdx: State<number> = state(0);
+  const verbIdx: State<number> = createState(0);
   const message: Signal<string> = verbIdx.map((i) => `I'm ${verbs[i]} you.`);
 
   return tag(
@@ -39,7 +52,7 @@ function Example(): HTMLElement {
 }
 
 const Stopwatch = () => {
-  const elapsed = state(0);
+  const elapsed = createState(0);
 
   let intervalId: number | null = null;
   const start = () => {
@@ -74,7 +87,7 @@ const Stopwatch = () => {
 };
 
 function ViewToggle1(): HTMLElement {
-  const count = state(0);
+  const count = createState(0);
   const view1 = tag(
     "span",
     attr("style", "color: red;"),
@@ -86,7 +99,7 @@ function ViewToggle1(): HTMLElement {
     text(count.map((x) => x.toString())),
   );
 
-  const showView1 = state(true);
+  const showView1 = createState(true);
   const currentView = showView1.map((v) => (v ? view1 : view2));
 
   return tag(
@@ -121,6 +134,7 @@ function App(): HTMLElement {
     ViewToggle1(),
     tag("h1", text("Todo lists")),
     TodoList(),
+    TextInputExample(),
   );
 }
 
