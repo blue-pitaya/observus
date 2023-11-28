@@ -1,6 +1,6 @@
 import {
+  AnyObservusElement,
   attr,
-  createRestrictedSignal,
   createState,
   on,
   tag,
@@ -11,11 +11,10 @@ import {
 //TODO: example of input that blocks numbers
 //TEST: what happend if i use restricted for 2 inputs?
 
-export function TextInputExample(): HTMLElement {
+export function TextInputExample() {
   const defaultValue = "I'm always looking";
   const value = createState(defaultValue);
   const label = value.map((v) => `Current value: ${v}`);
-  const [restrictedSignal, update] = createRestrictedSignal(value);
 
   return tag(
     "div",
@@ -23,9 +22,9 @@ export function TextInputExample(): HTMLElement {
     tag(
       "input",
       attr("type", "text"),
-      attr("value", restrictedSignal),
+      attr("value", value.signal()),
       on("input", (e: any) => {
-        update(() => e.target.value);
+        value.update(() => e.target.value);
       }),
     ),
     tag(

@@ -1,25 +1,19 @@
-//TODO: maybe State should extends Signal?
-//State should be possible to add as Signal for attr etc
-//TODO: try to create flatMap on signal for sports
-//TODO: test for diamond problem
+//TODO: add .extend (like .amend in laminar)
+//TODO: for all document.foo elements use type from these elements
 export interface State<A> {
-  currentValue: A;
-  //TODO: rename: observers
-  links: Array<Observer>;
-  map: <B>(f: (v: A) => B) => Signal<B>;
+  value: A;
+  observers: Array<Observer>;
+  set: (v: A) => void;
   update: (f: (v: A) => A) => void;
+  map: <B>(f: (v: A) => B) => Signal<B>;
   signal: () => Signal<A>;
 }
 
 export interface Observer {
-  //flag for signals thath should not be fired on ceratin conditions
-  restricted?: boolean;
   next: () => void;
 }
 
 export interface Signal<A> {
-  //flag for signals thath should not be fired on ceratin conditions
-  restricted?: boolean;
   sources: Array<State<any>>;
   getValue: () => A;
   map: <B>(f: (v: A) => B) => Signal<B>;
@@ -28,14 +22,13 @@ export interface Signal<A> {
 function mapState<A, B>(s: State<A>, f: (v: A) => B): Signal<B> {
   return {
     sources: [s],
-    getValue: () => f(s.currentValue),
+    getValue: () => f(s.value),
     map(f) {
       return mapSignal(this, f);
     },
   };
 }
 
-// can lead to stackoverflow if too many mappings
 function mapSignal<A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> {
   return {
     ...s,
@@ -48,14 +41,17 @@ function mapSignal<A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> {
 
 export function createState<A>(initialValue: A): State<A> {
   return {
-    currentValue: initialValue,
-    links: [],
-    map(f) {
-      return mapState(this, f);
+    value: initialValue,
+    observers: [],
+    set(v) {
+      this.update(() => v);
     },
     update(f) {
-      this.currentValue = f(this.currentValue);
-      this.links.forEach((link) => link.next());
+      this.value = f(this.value);
+      this.observers.forEach((o) => o.next());
+    },
+    map(f) {
+      return mapState(this, f);
     },
     signal() {
       return mapState(this, (x) => x);
@@ -63,47 +59,36 @@ export function createState<A>(initialValue: A): State<A> {
   };
 }
 
-/* Creates special signal that wont fire if state is updated using returned "update" function */
-export function createRestrictedSignal<A>(
-  s: State<A>,
-): [Signal<A>, (f: (v: A) => A) => void] {
-  const signal = s.signal();
-  signal.restricted = true;
+export function constSignal<A>(v: A): Signal<A> {
+  return {
+    sources: [],
+    getValue: () => v,
+    map(f) {
+      return mapSignal(this, f);
+    },
+  };
+}
 
-  const update = (f: (v: A) => A) => {
-    s.currentValue = f(s.currentValue);
-    s.links.forEach((observer) => {
-      if (!observer.restricted) {
-        observer.next();
-      }
+export type FreeFn = () => void;
+
+/* returns "unobserve" function */
+export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
+  const observer: Observer = {
+    next: () => next(s.getValue()),
+  };
+  s.sources.forEach((state) => {
+    state.observers.push(observer);
+  });
+  const unobserveFn = () => {
+    s.sources.forEach((state) => {
+      state.observers = state.observers.filter((o) => o !== observer);
     });
   };
+  observer.next();
 
-  return [signal, update];
+  return unobserveFn;
 }
 
-export function observe<A>(s: State<A> | Signal<A>, next: (v: A) => void) {
-  if ("currentValue" in s) {
-    //s is State
-    const observer: Observer = { next: () => next(s.currentValue) };
-    s.links.push(observer);
-    observer.next();
-  } else {
-    //s is Signal
-    const observer: Observer = {
-      next: () => next(s.getValue()),
-    };
-    if (s.restricted) {
-      observer.restricted = true;
-    }
-
-    s.sources.forEach((source) => source.links.push(observer));
-    observer.next();
-  }
-}
-
-//TODO: allow more than 2 signals
-//levae this function typed, and add combineMany without strict types
 export function combine<A, B, C>(
   sa: Signal<A>,
   sb: Signal<B>,
@@ -118,29 +103,76 @@ export function combine<A, B, C>(
   };
 }
 
-//TODO: explain how withValueOf(signal) can be just accesess via getValue in map
-//note that this is an exception and maps should be made in "pure" manner
+/* defaultValue in case signals array is empty */
+export function combineMany<A, B>(
+  signals: Array<Signal<A>>,
+  reduceFn: (acc: B, curr: A) => B,
+  defaultValue: B,
+): Signal<B> {
+  let sources: Array<State<A>> = [];
+  const getters: Array<() => A> = [];
+
+  signals.forEach((s) => {
+    sources = [...sources, ...s.sources];
+    getters.push(() => s.getValue());
+  });
+
+  return {
+    sources,
+    getValue() {
+      const values = getters.map((f) => f());
+      return values.reduce(reduceFn, defaultValue);
+    },
+    map(f) {
+      return mapSignal(this, f);
+    },
+  };
+}
 
 export function updateMany(
-  updates: Array<{ signal: State<any>; f: (v: any) => any }>,
+  updates: Array<{ state: State<any>; f: (v: any) => any }>,
 ) {
   let observersToUpdate: Set<Observer> = new Set();
   updates.forEach((u) => {
-    u.signal.currentValue = u.f(u.signal.currentValue);
-    u.signal.links.forEach((l) => observersToUpdate.add(l));
+    u.state.value = u.f(u.state.value);
+    u.state.observers.forEach((l) => observersToUpdate.add(l));
   });
 
   observersToUpdate.forEach((o) => o.next());
 }
 
-//export function
-
 // DOM building
 
+type StdElement = HTMLElement | SVGElement;
+
+export interface ObservusElement<A extends StdElement> {
+  kind: "ObservusElement";
+  el: A;
+  children: Array<ObservusElement<A>>;
+  freeResourcesFns: Array<() => void>;
+  isMounted: boolean;
+  onMounted: () => void;
+  onUnmounted: () => void;
+}
+
+export type AnyObservusElement = ObservusElement<StdElement>;
+
+// setAttrFn is used when property-based attribute settings is impossible
+// for example: transform attribute on svg elements
+type AttrSetStrategy = "property" | "setAttrFn";
+
+// if signal is null then property is removed
 interface AttrSetter {
   kind: "AttrSetter";
+  strategy: AttrSetStrategy;
   name: string;
   value: string | Signal<string | null>;
+}
+
+interface BoolAttrSetter {
+  kind: "BoolAttrSetter";
+  name: string;
+  value: boolean | Signal<boolean>;
 }
 
 interface TextSetter {
@@ -151,116 +183,315 @@ interface TextSetter {
 interface EventListenerSetter {
   kind: "EventListenerSetter";
   type: string;
-  listener: EventListenerOrEventListenerObject;
+  listener: <A extends Event>(e: A) => void;
   options?: boolean | AddEventListenerOptions;
 }
 
 interface TagSignalSetter {
   kind: "TagSignalSetter";
-  value: Signal<Element>;
+  value: Signal<AnyObservusElement>;
 }
 
-type Tag =
-  | HTMLElement
-  | SVGElement
+interface WithRefSetter {
+  kind: "WithRefSetter";
+  fn: (el: StdElement) => Setter;
+}
+
+interface MountedCallbackSetter {
+  kind: "MountedCallbackSetter";
+  fn: (el: StdElement) => void;
+}
+
+interface UnmountedCallbackSetter {
+  kind: "UnmountedCallbackSetter";
+  fn: () => void;
+}
+
+export type Setter =
+  | AnyObservusElement
   | TextSetter
   | AttrSetter
+  | BoolAttrSetter
   | EventListenerSetter
-  | TagSignalSetter;
+  | TagSignalSetter
+  | WithRefSetter
+  | MountedCallbackSetter
+  | UnmountedCallbackSetter;
 
-// setAttributeNS may be necessary for svg elements
-function createTag(
+function callOnMountedOnTree(el: AnyObservusElement) {
+  if (!el.isMounted) {
+    el.isMounted = true;
+    el.onMounted();
+  }
+  el.children.forEach((child) => {
+    callOnMountedOnTree(child);
+  });
+}
+
+/* clear resource bind to element */
+export function free(el: AnyObservusElement) {
+  if (el.isMounted) {
+    el.isMounted = false;
+    el.onMounted();
+    el.freeResourcesFns.forEach((fn) => {
+      fn();
+    });
+  }
+  el.children.forEach((child) => {
+    free(child);
+  });
+}
+
+//TODO: should return unmount function?
+export function mount(root: Element, el: AnyObservusElement) {
+  root.appendChild(el.el);
+  callOnMountedOnTree(el);
+}
+
+function emptyObservusElement<A extends StdElement>(
+  el: any,
+): ObservusElement<A> {
+  return {
+    kind: "ObservusElement",
+    el,
+    children: [],
+    freeResourcesFns: [],
+    isMounted: false,
+    onMounted: () => { },
+    onUnmounted: () => { },
+  };
+}
+
+function createTag<A extends StdElement>(
   name: string,
   isSvg: boolean,
-  ...children: Array<Tag>
-): HTMLElement | SVGElement {
-  const result = isSvg
-    ? document.createElementNS("http://www.w3.org/2000/svg", name)
-    : document.createElement(name);
+  ...setters: Children
+): ObservusElement<A> {
+  const observusElement = emptyObservusElement<A>(
+    isSvg
+      ? document.createElementNS("http://www.w3.org/2000/svg", name)
+      : document.createElement(name),
+  );
 
-  for (const child of children) {
-    if ("kind" in child) {
-      if (child.kind == "TextSetter") {
-        if (typeof child.value == "string") {
-          result.appendChild(document.createTextNode(child.value));
-        } else {
-          const textNode = document.createTextNode(child.value.getValue());
-          result.appendChild(textNode);
-          observe(child.value, (v) => {
-            textNode.nodeValue = v;
-          });
-        }
-      } else if (child.kind == "AttrSetter") {
-        //using property setting instead of setAttribute
-        //beacuse of some cases whre setAttribute dont update element
-        //like value in input.text
-        if (typeof child.value == "string") {
-          // @ts-ignore
-          result[child.name] = child.value;
-        } else {
-          observe(child.value, (v) => {
-            if (v !== null) {
-              // @ts-ignore
-              result[child.name] = v;
-            } else {
-              // should work for all cases, i hope
-              result.removeAttribute(child.name);
-            }
-          });
-        }
-      } else if (child.kind == "EventListenerSetter") {
-        result.addEventListener(child.type, child.listener, child.options);
-      } else if (child.kind == "TagSignalSetter") {
-        //TODO: clear event listeners and observables on children
-        let lastValue: Element | null = null;
-        observe(child.value, (el) => {
-          if (lastValue !== null) {
-            result.replaceChild(el, lastValue);
-          } else {
-            result.appendChild(el);
-          }
-          lastValue = el;
-        });
-      }
+  for (const setter of setters) {
+    handleSetter(setter, observusElement);
+  }
+
+  return observusElement;
+}
+
+function handleSetter(setter: Setter, o: AnyObservusElement) {
+  function appendChild(child: AnyObservusElement) {
+    o.el.appendChild(child.el);
+    o.children.push(child);
+  }
+
+  if (setter.kind == "ObservusElement") {
+    appendChild(setter);
+  }
+
+  if (setter.kind == "TextSetter") {
+    if (typeof setter.value == "string") {
+      appendChild(emptyObservusElement(document.createTextNode(setter.value)));
     } else {
-      result.appendChild(child);
+      const textNode = document.createTextNode(setter.value.getValue());
+      const unobserve = observe(setter.value, (v) => {
+        textNode.nodeValue = v;
+      });
+      const observusElement = emptyObservusElement(textNode);
+      observusElement.freeResourcesFns.push(unobserve);
+      appendChild(observusElement);
     }
   }
 
-  return result;
+  //using property-based attribute setting as default
+  //setAttribute is needed for non-standard and readonly attributes
+  if (setter.kind == "AttrSetter") {
+    if (typeof setter.value == "string") {
+      if (setter.strategy == "setAttrFn") {
+        o.el.setAttribute(setter.name, setter.value);
+      } else {
+        // @ts-ignore
+        o.el[setter.name] = setter.value;
+      }
+    } else {
+      const unobserve = observe(setter.value, (v) => {
+        if (v !== null) {
+          if (setter.strategy == "setAttrFn") {
+            o.el.setAttribute(setter.name, v);
+          } else {
+            // @ts-ignore
+            o.el[setter.name] = v;
+          }
+        } else {
+          // should work for both cases, i hope
+          o.el.removeAttribute(setter.name);
+        }
+      });
+      o.freeResourcesFns.push(unobserve);
+    }
+  }
+
+  if (setter.kind == "BoolAttrSetter") {
+    if (typeof setter.value == "boolean") {
+      // @ts-ignore
+      o.el[setter.name] = setter.value;
+    } else {
+      //maybe removing attr is safer than setting false?
+      const unobserve = observe(setter.value, (v) => {
+        // @ts-ignore
+        o.el[setter.name] = v;
+      });
+      o.freeResourcesFns.push(unobserve);
+    }
+  }
+
+  if (setter.kind == "EventListenerSetter") {
+    o.el.addEventListener(setter.type, setter.listener, setter.options);
+    o.freeResourcesFns.push(() => {
+      o.el.removeEventListener(setter.type, setter.listener, setter.options);
+    });
+  }
+
+  if (setter.kind == "TagSignalSetter") {
+    let lastValue: AnyObservusElement | null = null;
+    const unobserve = observe(setter.value, (observusEl) => {
+      if (lastValue !== null) {
+        o.children = o.children.map((child) => {
+          //child is replaced
+          if (child === lastValue) {
+            //TODO: think about strategy to free resources
+            return observusEl;
+          } else {
+            return child;
+          }
+        });
+        o.el.replaceChild(observusEl.el, lastValue.el);
+      } else {
+        appendChild(observusEl);
+      }
+      if (o.isMounted) {
+        callOnMountedOnTree(observusEl);
+      }
+      lastValue = observusEl;
+    });
+    o.freeResourcesFns.push(unobserve);
+  }
+
+  if (setter.kind == "WithRefSetter") {
+    const newSetter = setter.fn(o.el);
+    handleSetter(newSetter, o);
+  }
+
+  if (setter.kind == "MountedCallbackSetter") {
+    o.onMounted = () => {
+      setter.fn(o.el);
+    };
+  }
+  if (setter.kind == "UnmountedCallbackSetter") {
+    o.onUnmounted = () => {
+      setter.fn();
+    };
+  }
 }
 
-//TODO: updateRef (to update in imperativ fashion)
-//TODO: would be nice to allow tagSignal(value: Signal<Element[]>) to avoid surogate container
+//TODO: would be nice to allow tagSignal(value: Signal<ObservusElement[]>) to avoid surogate container
 
-export const tag = (name: string, ...children: Array<Tag>) =>
-  createTag(name, false, ...children) as HTMLElement;
-export const svgTag = (name: string, ...children: Array<Tag>) =>
-  createTag(name, true, ...children) as SVGElement;
-export const text = (value: string | Signal<string>): TextSetter => ({
-  kind: "TextSetter",
-  value,
-});
-// TODO: for svg should add namespace?
-export const attr = (
+export type Children = Array<Setter>;
+
+//TODO: better type?
+//    createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementTagNameMap[K];
+//    /** @deprecated */
+//    createElement<K extends keyof HTMLElementDeprecatedTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementDeprecatedTagNameMap[K];
+//    createElement(tagName: string, options?: ElementCreationOptions): HTMLElement;
+export function tag<A extends HTMLElement>(name: string, ...ch: Children) {
+  return createTag<A>(name, false, ...ch);
+}
+
+export function svgTag<A extends SVGElement>(name: string, ...ch: Children) {
+  return createTag<A>(name, true, ...ch);
+}
+
+export function text(value: string | Signal<string>): TextSetter {
+  return {
+    kind: "TextSetter",
+    value,
+  };
+}
+
+export function attr(
   name: string,
   value: string | Signal<string | null>,
-): AttrSetter => ({
-  kind: "AttrSetter",
-  name,
-  value,
-});
-export const on = (
+  strategy: AttrSetStrategy = "property",
+): AttrSetter {
+  return {
+    kind: "AttrSetter",
+    strategy,
+    name,
+    value,
+  };
+}
+
+export function setAttr(
+  name: string,
+  value: string | Signal<string | null>,
+): AttrSetter {
+  return attr(name, value, "setAttrFn");
+}
+
+export function boolAttr(
+  name: string,
+  value: boolean | Signal<boolean>,
+): BoolAttrSetter {
+  return {
+    kind: "BoolAttrSetter",
+    name,
+    value,
+  };
+}
+
+//TODO: better types:
+//addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+export function on(
   type: string,
-  listener: any,
+  listener: (e: Event) => void,
   options?: boolean | AddEventListenerOptions,
-): EventListenerSetter => ({
-  kind: "EventListenerSetter",
-  type,
-  listener,
-  options,
-});
-export const tagSignal = (value: Signal<Element>): TagSignalSetter => ({
-  kind: "TagSignalSetter",
-  value,
-});
+): EventListenerSetter {
+  return {
+    kind: "EventListenerSetter",
+    type,
+    listener,
+    options,
+  };
+}
+
+export function tagSignal(
+  value: Signal<ObservusElement<StdElement>>,
+): TagSignalSetter {
+  return {
+    kind: "TagSignalSetter",
+    value,
+  };
+}
+
+export function withRef(fn: (el: StdElement) => Setter): WithRefSetter {
+  return {
+    kind: "WithRefSetter",
+    fn,
+  };
+}
+
+export function onMounted(fn: (el: StdElement) => void): MountedCallbackSetter {
+  return {
+    kind: "MountedCallbackSetter",
+    fn,
+  };
+}
+
+//TODO: maybe better call it onFree?
+export function onUnmounted(fn: () => void): UnmountedCallbackSetter {
+  return {
+    kind: "UnmountedCallbackSetter",
+    fn,
+  };
+}

@@ -5,7 +5,7 @@ interface TodoItem {
   done: boolean;
 }
 
-function TodoItem(item: State<TodoItem>, remove: () => void): HTMLElement {
+function TodoItem(item: State<TodoItem>, remove: () => void) {
   const markDoneButton = tag(
     "button",
     text("Done!"),
@@ -19,10 +19,10 @@ function TodoItem(item: State<TodoItem>, remove: () => void): HTMLElement {
   return tag("li", tagSignal(label), markDoneButton, deleteButton);
 }
 
-export function TodoList(): HTMLElement {
+export function TodoList() {
   const itemsState = createState<Array<State<TodoItem>>>([]); // state can be nested
 
-  const inputField = tag("input", attr("type", "text")) as HTMLInputElement;
+  const inputField = tag("input", attr("type", "text"));
 
   const listComponent = itemsState.map((items) => {
     const todos = items.map((item) =>
@@ -37,7 +37,8 @@ export function TodoList(): HTMLElement {
 
   const addTodo = () => {
     itemsState.update((vs) => {
-      vs.push(createState<TodoItem>({ name: inputField.value, done: false }));
+      //FIXME:
+      vs.push(createState<TodoItem>({ name: "inputField.value", done: false }));
       return vs;
     });
   };

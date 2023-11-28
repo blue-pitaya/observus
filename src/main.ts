@@ -1,38 +1,19 @@
 import {
   createState,
-  combine,
-  updateMany,
   State,
   Signal,
-  observe,
   text,
   tag,
   on,
   attr,
   tagSignal,
+  mount,
 } from "./observus";
 import "./style.css";
 import { TextInputExample } from "./textInputExample";
 import { TodoList } from "./todoListExample";
 
-const a = createState(10);
-const b = createState(3);
-
-const c = a.map((x) => x + 1);
-const d = c.map((x) => x * 2);
-const e = combine(d, b.signal(), (x, y) => x - y);
-
-observe(e, (x) => console.log(x));
-
-a.update((x) => x + 2);
-b.update(() => 5);
-
-updateMany([
-  { signal: a, f: () => 20 },
-  { signal: b, f: () => 2 },
-]);
-
-function Example(): HTMLElement {
+function Example() {
   const verbs: Array<string> = ["watching", "observing", "seeing"];
   const verbIdx: State<number> = createState(0);
   const message: Signal<string> = verbIdx.map((i) => `I'm ${verbs[i]} you.`);
@@ -86,7 +67,7 @@ const Stopwatch = () => {
   );
 };
 
-function ViewToggle1(): HTMLElement {
+function ViewToggle1() {
   const count = createState(0);
   const view1 = tag(
     "span",
@@ -117,7 +98,7 @@ function ViewToggle1(): HTMLElement {
       text("Increment counter"),
       on("click", () => {
         count.update((x) => x + 1);
-        console.log(count.links.length); //TODO: counter links are not cleared
+        console.log(count.observers.length); //TODO: counter links are not cleared
       }),
     ),
   );
@@ -125,7 +106,7 @@ function ViewToggle1(): HTMLElement {
 
 //TODO: view toggle using hidden prop (safer?)
 
-function App(): HTMLElement {
+function App() {
   return tag(
     "div",
     attr("style", "display: flex; flex-direction: column; gap: 24px;"),
@@ -138,5 +119,4 @@ function App(): HTMLElement {
   );
 }
 
-const app = App();
-document.getElementById("app")!.appendChild(app);
+mount(document.getElementById("app")!, App());
