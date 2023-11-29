@@ -129,16 +129,39 @@ export function combineMany<A, B>(
   };
 }
 
-export function updateMany(
-  updates: Array<{ state: State<any>; f: (v: any) => any }>,
-) {
+export interface StateUpdateFn<A> {
+  state: State<A>;
+  fn: (v: A) => A;
+}
+export function updateMany(...updates: Array<StateUpdateFn<any>>) {
   let observersToUpdate: Set<Observer> = new Set();
   updates.forEach((u) => {
-    u.state.value = u.f(u.state.value);
+    u.state.value = u.fn(u.state.value);
     u.state.observers.forEach((l) => observersToUpdate.add(l));
   });
 
   observersToUpdate.forEach((o) => o.next());
+}
+
+//TODO: could i use combine function to do this? xd
+//TEST: observe must set value on proxyState immidetly
+export function flatten<A>(
+  superSignal: Signal<Signal<A>>,
+): [Signal<A>, FreeFn] {
+  const proxyState = createState<A | undefined>(undefined);
+  let freeFn: () => void = () => {};
+  const free2 = observe(superSignal, (signal) => {
+    freeFn();
+    freeFn = observe(signal, (v) => {
+      proxyState.set(v);
+    });
+  });
+  const totalFree = () => {
+    freeFn();
+    free2();
+  };
+
+  return [proxyState.signal() as Signal<A>, totalFree];
 }
 
 // DOM building
@@ -257,8 +280,8 @@ function emptyObservusElement<A extends StdElement>(
     children: [],
     freeResourcesFns: [],
     isMounted: false,
-    onMounted: () => { },
-    onUnmounted: () => { },
+    onMounted: () => {},
+    onUnmounted: () => {},
   };
 }
 
