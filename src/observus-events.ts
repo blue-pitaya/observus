@@ -1,4 +1,4 @@
-import { on } from "./observus";
+import { on } from "./observus-core";
 
 //TODO: is this really needed? since i can use extensive types of existing eventListeners
 export const onClick = (

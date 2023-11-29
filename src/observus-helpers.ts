@@ -6,7 +6,7 @@ import {
   createState,
   free,
   observe,
-} from "./observus";
+} from "./observus-core";
 
 interface HasId<A, B> {
   id: A;

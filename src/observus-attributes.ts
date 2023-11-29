@@ -5,7 +5,7 @@ import {
   combineMany,
   constSignal,
   setAttr,
-} from "./observus";
+} from "./observus-core";
 
 //TODO: maybe i should move parse style here?
 //ADD TO DOC: propose special file utils where will be imports like

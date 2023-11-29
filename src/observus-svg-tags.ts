@@ -1,4 +1,4 @@
-import { Setter, svgTag } from "./observus";
+import { Setter, svgTag } from "./observus-core";
 
 type C = Array<Setter>;
 export const a = (...c: C) => svgTag<SVGAElement>("a", ...c);

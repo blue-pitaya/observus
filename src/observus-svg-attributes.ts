@@ -1,4 +1,4 @@
-import { Signal, setAttr } from "./observus";
+import { Signal, setAttr } from "./observus-core";
 
 type A = string | Signal<string | null>;
 export const transform = (v: A) => setAttr("transform", v);

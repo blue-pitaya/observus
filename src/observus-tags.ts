@@ -1,4 +1,4 @@
-import { Children, tag } from "./observus";
+import { Children, tag } from "./observus-core";
 
 //TODO: similar "on" event listeners helpers
 

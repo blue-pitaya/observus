@@ -1,4 +1,4 @@
-import { createState, State, text, tag, on, attr, tagSignal } from "./observus";
+import { createState, State, text, tag, on, attr, tagSignal } from "./observus-core";
 
 interface TodoItem {
   name: string;

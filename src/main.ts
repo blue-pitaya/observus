@@ -8,7 +8,7 @@ import {
   attr,
   tagSignal,
   mount,
-} from "./observus";
+} from "./observus-core";
 import "./style.css";
 import { TextInputExample } from "./textInputExample";
 import { TodoList } from "./todoListExample";
