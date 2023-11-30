@@ -5,7 +5,7 @@ import {
   on,
   tag,
   text,
-} from "./observus-core";
+} from "./lib/observus-core";
 
 //TODO: explain why is this important using laminar doc on "controlled"
 //TODO: example of input that blocks numbers

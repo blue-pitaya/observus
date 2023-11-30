@@ -8,18 +8,21 @@ export default defineConfig({
     lib: {
       // Could also be a dictionary or array of multiple entry points
       entry: {
-        "observus-core": resolve(__dirname, "src/observus-core.ts"),
-        "observus-helpers": resolve(__dirname, "src/observus-helpers.ts"),
-        "observus-tags": resolve(__dirname, "src/observus-tags.ts"),
-        "observus-attributes": resolve(__dirname, "src/observus-attributes.ts"),
-        "observus-svg-tags": resolve(__dirname, "src/observus-svg-tags.ts"),
+        "observus-core": resolve(__dirname, "src/lib/observus-core.ts"),
+        "observus-helpers": resolve(__dirname, "src/lib/observus-helpers.ts"),
+        "observus-tags": resolve(__dirname, "src/lib/observus-tags.ts"),
+        "observus-attributes": resolve(__dirname, "src/lib/observus-attributes.ts"),
+        "observus-svg-tags": resolve(__dirname, "src/lib/observus-svg-tags.ts"),
         "observus-svg-attributes": resolve(
           __dirname,
-          "src/observus-svg-attributes.ts",
+          "src/lib/observus-svg-attributes.ts",
         ),
       },
       name: "observus",
     },
   },
-  plugins: [dts()],
+  plugins: [dts({
+    entryRoot: "src/lib",
+    exclude: "**/*.test.ts"
+  })],
 });
