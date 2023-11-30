@@ -1,12 +1,46 @@
 {
   "name": "observus",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Simple and minimal reactive UI library for web.",
+  "author": "blue-pitaya <blue-pitaya@pm.me>",
+  "keywords": ["observus", "reactive", "ui"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blue-pitaya/observus"
+  },
+  "license": "MIT",
   "type": "module",
+  "files": ["dist"],
+  "module": "./dist/observus-core.js",
+  "main": "./dist/observus-core.cjs",
+  "exports": {
+    ".": {
+      "import": "./dist/observus-core.js",
+      "require": "./dist/observus-core.cjs"
+    },
+    "./helpers": {
+      "import": "./dist/observus-helpers.js",
+      "require": "./dist/observus-helpers.cjs"
+    },
+    "./tags": {
+      "import": "./dist/observus-tags.js",
+      "require": "./dist/observus-tags.cjs"
+    },
+    "./attributes": {
+      "import": "./dist/observus-attributes.js",
+      "require": "./dist/observus-attributes.cjs"
+    },
+    "./svg-tags": {
+      "import": "./dist/observus-svg-tags.js",
+      "require": "./dist/observus-svg-tags.cjs"
+    },
+    "./svg-attributes": {
+      "import": "./dist/observus-svg-attributes.js",
+      "require": "./dist/observus-svg-attributes.cjs"
+    }
+  },
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
     "test": "jest"
   },
   "devDependencies": {
@@ -14,6 +48,7 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.6.3"
   }
 }

@@ -185,14 +185,14 @@ export type AnyObservusElement = ObservusElement<StdElement>;
 type AttrSetStrategy = "property" | "setAttrFn";
 
 // if signal is null then property is removed
-interface AttrSetter {
+export interface AttrSetter {
   kind: "AttrSetter";
   strategy: AttrSetStrategy;
   name: string;
   value: string | Signal<string | null>;
 }
 
-interface BoolAttrSetter {
+export interface BoolAttrSetter {
   kind: "BoolAttrSetter";
   name: string;
   value: boolean | Signal<boolean>;
