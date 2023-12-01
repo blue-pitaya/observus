@@ -175,6 +175,7 @@ export interface ObservusElement<A extends StdElement> {
   freeResourcesFns: Array<() => void>;
   isMounted: boolean;
   onMounted: () => void;
+  onAfterMounted: () => void;
   onUnmounted: () => void;
 }
 
@@ -224,6 +225,25 @@ interface MountedCallbackSetter {
   kind: "MountedCallbackSetter";
   fn: (el: StdElement) => void;
 }
+export function onMounted(fn: (el: StdElement) => void): MountedCallbackSetter {
+  return {
+    kind: "MountedCallbackSetter",
+    fn,
+  };
+}
+
+interface AfterMountedCallbackSetter {
+  kind: "AfterMountedCallbackSetter";
+  fn: (el: StdElement) => void;
+}
+export function onAfterMounted(
+  fn: (el: StdElement) => void,
+): AfterMountedCallbackSetter {
+  return {
+    kind: "AfterMountedCallbackSetter",
+    fn,
+  };
+}
 
 interface UnmountedCallbackSetter {
   kind: "UnmountedCallbackSetter";
@@ -239,18 +259,23 @@ export type Setter =
   | TagSignalSetter
   | WithRefSetter
   | MountedCallbackSetter
+  | AfterMountedCallbackSetter
   | UnmountedCallbackSetter;
 
-//TODO: add onAfterMounted()?
-//its like onMounted but in post-order fashion
 function callOnMountedOnTree(el: AnyObservusElement) {
-  if (!el.isMounted) {
+  let wasMounted = el.isMounted;
+  if (!wasMounted) {
     el.isMounted = true;
     el.onMounted();
   }
+
   el.children.forEach((child) => {
     callOnMountedOnTree(child);
   });
+
+  if (!wasMounted) {
+    el.onAfterMounted();
+  }
 }
 
 /* clear resource bind to element */
@@ -283,6 +308,7 @@ function emptyObservusElement<A extends StdElement>(
     freeResourcesFns: [],
     isMounted: false,
     onMounted: () => {},
+    onAfterMounted: () => {},
     onUnmounted: () => {},
   };
 }
@@ -413,6 +439,13 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
       setter.fn(o.el);
     };
   }
+
+  if (setter.kind == "AfterMountedCallbackSetter") {
+    o.onAfterMounted = () => {
+      setter.fn(o.el);
+    };
+  }
+
   if (setter.kind == "UnmountedCallbackSetter") {
     o.onUnmounted = () => {
       setter.fn();
@@ -502,13 +535,6 @@ export function tagSignal(
 export function withRef(fn: (el: StdElement) => Setter): WithRefSetter {
   return {
     kind: "WithRefSetter",
-    fn,
-  };
-}
-
-export function onMounted(fn: (el: StdElement) => void): MountedCallbackSetter {
-  return {
-    kind: "MountedCallbackSetter",
     fn,
   };
 }
