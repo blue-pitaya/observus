@@ -1,6 +1,8 @@
 import { Children, tag } from "./observus-core";
 
-//TODO: similar "on" event listeners helpers
+//TODO: create tags from type definitions:
+// createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementTagNameMap[K];
+//DOC: deprecated tags are not defined
 
 // Tags from: https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 

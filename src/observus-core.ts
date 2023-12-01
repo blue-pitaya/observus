@@ -1,5 +1,6 @@
 //TODO: add .extend (like .amend in laminar)
 //TODO: for all document.foo elements use type from these elements
+//TODO: would be nice to allow tagSignal(value: Signal<ObservusElement[]>) to avoid surogate container
 export interface State<A> {
   value: A;
   observers: Array<Observer>;
@@ -178,13 +179,26 @@ export interface ObservusElement<A extends StdElement> {
   onAfterMounted: () => void;
   onUnmounted: () => void;
 }
+function emptyObservusElement<A extends StdElement>(
+  el: any,
+): ObservusElement<A> {
+  return {
+    kind: "ObservusElement",
+    el,
+    children: [],
+    freeResourcesFns: [],
+    isMounted: false,
+    onMounted: () => {},
+    onAfterMounted: () => {},
+    onUnmounted: () => {},
+  };
+}
 
 export type AnyObservusElement = ObservusElement<StdElement>;
 
 // setAttrFn is used when property-based attribute settings is impossible
 // for example: transform attribute on svg elements
 type AttrSetStrategy = "property" | "setAttrFn";
-
 // if signal is null then property is removed
 export interface AttrSetter {
   kind: "AttrSetter";
@@ -192,33 +206,96 @@ export interface AttrSetter {
   name: string;
   value: string | Signal<string | null>;
 }
+export function attr(
+  name: string,
+  value: string | Signal<string | null>,
+  strategy: AttrSetStrategy = "property",
+): AttrSetter {
+  return {
+    kind: "AttrSetter",
+    strategy,
+    name,
+    value,
+  };
+}
+export function setAttr(
+  name: string,
+  value: string | Signal<string | null>,
+): AttrSetter {
+  return attr(name, value, "setAttrFn");
+}
 
 export interface BoolAttrSetter {
   kind: "BoolAttrSetter";
   name: string;
   value: boolean | Signal<boolean>;
 }
+export function boolAttr(
+  name: string,
+  value: boolean | Signal<boolean>,
+): BoolAttrSetter {
+  return {
+    kind: "BoolAttrSetter",
+    name,
+    value,
+  };
+}
 
 interface TextSetter {
   kind: "TextSetter";
   value: string | Signal<string>;
 }
+export function text(value: string | Signal<string>): TextSetter {
+  return {
+    kind: "TextSetter",
+    value,
+  };
+}
 
+//TODO: better type:
+//addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
 interface EventListenerSetter {
   kind: "EventListenerSetter";
   type: string;
   listener: <A extends Event>(e: A) => void;
   options?: boolean | AddEventListenerOptions;
 }
+export function on(
+  type: string,
+  listener: (e: Event) => void,
+  options?: boolean | AddEventListenerOptions,
+): EventListenerSetter {
+  return {
+    kind: "EventListenerSetter",
+    type,
+    listener,
+    options,
+  };
+}
 
+//TODO: better name: elementSignal?
 interface TagSignalSetter {
   kind: "TagSignalSetter";
   value: Signal<AnyObservusElement>;
+}
+export function tagSignal(
+  value: Signal<ObservusElement<StdElement>>,
+): TagSignalSetter {
+  return {
+    kind: "TagSignalSetter",
+    value,
+  };
 }
 
 interface WithRefSetter {
   kind: "WithRefSetter";
   fn: (el: StdElement) => Setter;
+}
+export function withRef(fn: (el: StdElement) => Setter): WithRefSetter {
+  return {
+    kind: "WithRefSetter",
+    fn,
+  };
 }
 
 interface MountedCallbackSetter {
@@ -248,6 +325,13 @@ export function onAfterMounted(
 interface UnmountedCallbackSetter {
   kind: "UnmountedCallbackSetter";
   fn: () => void;
+}
+//TODO: maybe better call it onFree?
+export function onUnmounted(fn: () => void): UnmountedCallbackSetter {
+  return {
+    kind: "UnmountedCallbackSetter",
+    fn,
+  };
 }
 
 export type Setter =
@@ -298,19 +382,13 @@ export function mount(root: Element, el: AnyObservusElement) {
   callOnMountedOnTree(el);
 }
 
-function emptyObservusElement<A extends StdElement>(
-  el: any,
-): ObservusElement<A> {
-  return {
-    kind: "ObservusElement",
-    el,
-    children: [],
-    freeResourcesFns: [],
-    isMounted: false,
-    onMounted: () => {},
-    onAfterMounted: () => {},
-    onUnmounted: () => {},
-  };
+export type Children = Array<Setter>;
+
+export function tag<A extends HTMLElement>(name: string, ...ch: Children) {
+  return createTag<A>(name, false, ...ch);
+}
+export function svgTag<A extends SVGElement>(name: string, ...ch: Children) {
+  return createTag<A>(name, true, ...ch);
 }
 
 function createTag<A extends StdElement>(
@@ -451,98 +529,4 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
       setter.fn();
     };
   }
-}
-
-//TODO: would be nice to allow tagSignal(value: Signal<ObservusElement[]>) to avoid surogate container
-
-export type Children = Array<Setter>;
-
-//TODO: better type?
-//    createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementTagNameMap[K];
-//    /** @deprecated */
-//    createElement<K extends keyof HTMLElementDeprecatedTagNameMap>(tagName: K, options?: ElementCreationOptions): HTMLElementDeprecatedTagNameMap[K];
-//    createElement(tagName: string, options?: ElementCreationOptions): HTMLElement;
-export function tag<A extends HTMLElement>(name: string, ...ch: Children) {
-  return createTag<A>(name, false, ...ch);
-}
-
-export function svgTag<A extends SVGElement>(name: string, ...ch: Children) {
-  return createTag<A>(name, true, ...ch);
-}
-
-export function text(value: string | Signal<string>): TextSetter {
-  return {
-    kind: "TextSetter",
-    value,
-  };
-}
-
-export function attr(
-  name: string,
-  value: string | Signal<string | null>,
-  strategy: AttrSetStrategy = "property",
-): AttrSetter {
-  return {
-    kind: "AttrSetter",
-    strategy,
-    name,
-    value,
-  };
-}
-
-export function setAttr(
-  name: string,
-  value: string | Signal<string | null>,
-): AttrSetter {
-  return attr(name, value, "setAttrFn");
-}
-
-export function boolAttr(
-  name: string,
-  value: boolean | Signal<boolean>,
-): BoolAttrSetter {
-  return {
-    kind: "BoolAttrSetter",
-    name,
-    value,
-  };
-}
-
-//TODO: better types:
-//addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-export function on(
-  type: string,
-  listener: (e: Event) => void,
-  options?: boolean | AddEventListenerOptions,
-): EventListenerSetter {
-  return {
-    kind: "EventListenerSetter",
-    type,
-    listener,
-    options,
-  };
-}
-
-export function tagSignal(
-  value: Signal<ObservusElement<StdElement>>,
-): TagSignalSetter {
-  return {
-    kind: "TagSignalSetter",
-    value,
-  };
-}
-
-export function withRef(fn: (el: StdElement) => Setter): WithRefSetter {
-  return {
-    kind: "WithRefSetter",
-    fn,
-  };
-}
-
-//TODO: maybe better call it onFree?
-export function onUnmounted(fn: () => void): UnmountedCallbackSetter {
-  return {
-    kind: "UnmountedCallbackSetter",
-    fn,
-  };
 }
