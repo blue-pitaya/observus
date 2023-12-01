@@ -241,6 +241,8 @@ export type Setter =
   | MountedCallbackSetter
   | UnmountedCallbackSetter;
 
+//TODO: add onAfterMounted()?
+//its like onMounted but in post-order fashion
 function callOnMountedOnTree(el: AnyObservusElement) {
   if (!el.isMounted) {
     el.isMounted = true;
