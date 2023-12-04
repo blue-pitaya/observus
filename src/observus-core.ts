@@ -1,6 +1,3 @@
-//TODO: add .extend (like .amend in laminar)
-//TODO: for all document.foo elements use type from these elements
-//TODO: would be nice to allow tagSignal(value: Signal<ObservusElement[]>) to avoid surogate container
 export interface State<A> {
   value: A;
   observers: Array<Observer>;
@@ -167,6 +164,7 @@ export function flatten<A>(
 
 // DOM building
 
+type NullOrUndef = null | undefined;
 type StdElement = HTMLElement | SVGElement;
 
 export interface ObservusElement<A extends StdElement> {
@@ -199,16 +197,16 @@ export type AnyObservusElement = ObservusElement<StdElement>;
 // setAttrFn is used when property-based attribute settings is impossible
 // for example: transform attribute on svg elements
 type AttrSetStrategy = "property" | "setAttrFn";
-// if signal is null then property is removed
+// if signal is null or undefined then property is removed
 export interface AttrSetter {
   kind: "AttrSetter";
   strategy: AttrSetStrategy;
   name: string;
-  value: string | Signal<string | null>;
+  value: string | NullOrUndef | Signal<string | NullOrUndef>;
 }
 export function attr(
   name: string,
-  value: string | Signal<string | null>,
+  value: string | NullOrUndef | Signal<string | NullOrUndef>,
   strategy: AttrSetStrategy = "property",
 ): AttrSetter {
   return {
@@ -220,7 +218,7 @@ export function attr(
 }
 export function setAttr(
   name: string,
-  value: string | Signal<string | null>,
+  value: string | NullOrUndef | Signal<string | NullOrUndef>,
 ): AttrSetter {
   return attr(name, value, "setAttrFn");
 }
@@ -436,6 +434,9 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
   //using property-based attribute setting as default
   //setAttribute is needed for non-standard and readonly attributes
   if (setter.kind == "AttrSetter") {
+    if (setter.value === null || setter.value === undefined) {
+      return;
+    }
     if (typeof setter.value == "string") {
       if (setter.strategy == "setAttrFn") {
         o.el.setAttribute(setter.name, setter.value);
@@ -445,7 +446,7 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
       }
     } else {
       const unobserve = observe(setter.value, (v) => {
-        if (v !== null) {
+        if (v !== null && v !== undefined) {
           if (setter.strategy == "setAttrFn") {
             o.el.setAttribute(setter.name, v);
           } else {
