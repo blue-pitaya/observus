@@ -13,6 +13,13 @@ function mounted(el: AnyObservusElement): AnyObservusElement {
   return el;
 }
 
+test("string is treated as text node", () => {
+  const textValue = "elo";
+  const el = mounted(tag("div", textValue));
+
+  expect(el.el.textContent).toBe(textValue);
+});
+
 test("attribute that is null is not added", () => {
   const el = mounted(tag("div", setAttr("custom", null)));
 

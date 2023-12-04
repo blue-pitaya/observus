@@ -1,4 +1,5 @@
 import {
+  NullOrUndef,
   Signal,
   attr,
   boolAttr,
@@ -12,7 +13,7 @@ import {
 //import * as _ from "./observus-attributes";
 //for easier imports (+check if bundle size is not super bigger if importing whole helpers obj)
 
-type A = string | Signal<string | null>;
+type A = string | NullOrUndef | Signal<string | NullOrUndef>;
 type B = boolean | Signal<boolean>;
 
 export const cls = (v: A) => attr("class", v, "setAttrFn");

@@ -164,7 +164,7 @@ export function flatten<A>(
 
 // DOM building
 
-type NullOrUndef = null | undefined;
+export type NullOrUndef = null | undefined;
 type StdElement = HTMLElement | SVGElement;
 
 export interface ObservusElement<A extends StdElement> {
@@ -239,13 +239,13 @@ export function boolAttr(
   };
 }
 
-interface TextSetter {
-  kind: "TextSetter";
-  value: string | Signal<string>;
+export interface TextSignalSetter {
+  kind: "TextSignalSetter";
+  value: Signal<string>;
 }
-export function text(value: string | Signal<string>): TextSetter {
+export function textSignal(value: Signal<string>): TextSignalSetter {
   return {
-    kind: "TextSetter",
+    kind: "TextSignalSetter",
     value,
   };
 }
@@ -334,7 +334,8 @@ export function onUnmounted(fn: () => void): UnmountedCallbackSetter {
 
 export type Setter =
   | AnyObservusElement
-  | TextSetter
+  | string
+  | TextSignalSetter
   | AttrSetter
   | BoolAttrSetter
   | EventListenerSetter
@@ -413,22 +414,23 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
     o.children.push(child);
   }
 
+  if (typeof setter === "string") {
+    appendChild(emptyObservusElement(document.createTextNode(setter)));
+    return;
+  }
+
   if (setter.kind == "ObservusElement") {
     appendChild(setter);
   }
 
-  if (setter.kind == "TextSetter") {
-    if (typeof setter.value == "string") {
-      appendChild(emptyObservusElement(document.createTextNode(setter.value)));
-    } else {
-      const textNode = document.createTextNode(setter.value.getValue());
-      const unobserve = observe(setter.value, (v) => {
-        textNode.nodeValue = v;
-      });
-      const observusElement = emptyObservusElement(textNode);
-      observusElement.freeResourcesFns.push(unobserve);
-      appendChild(observusElement);
-    }
+  if (setter.kind == "TextSignalSetter") {
+    const textNode = document.createTextNode(setter.value.getValue());
+    const unobserve = observe(setter.value, (v) => {
+      textNode.nodeValue = v;
+    });
+    const observusElement = emptyObservusElement(textNode);
+    observusElement.freeResourcesFns.push(unobserve);
+    appendChild(observusElement);
   }
 
   //using property-based attribute setting as default
