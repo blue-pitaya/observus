@@ -13,6 +13,15 @@ function mounted(el: AnyObservusElement): AnyObservusElement {
   return el;
 }
 
+test("mount removes all pre-existing children of root element", () => {
+  document.body.innerHTML = '<div id="app"><span>trololo</span></div>';
+  const root = document.querySelector("#app")!;
+
+  mount(root, tag("div"));
+
+  expect(root.childNodes.length).toEqual(1);
+});
+
 test("string is treated as text node", () => {
   const textValue = "elo";
   const el = mounted(tag("div", textValue));
