@@ -146,7 +146,7 @@ export function flatten<A>(
   superSignal: Signal<Signal<A>>,
 ): [Signal<A>, FreeFn] {
   const proxyState = createState<A | undefined>(undefined);
-  let freeFn: () => void = () => { };
+  let freeFn: () => void = () => {};
   const free2 = observe(superSignal, (signal) => {
     freeFn();
     freeFn = observe(signal, (v) => {
@@ -185,14 +185,18 @@ function emptyObservusElement<A extends StdElement>(
     children: [],
     freeResourcesFns: [],
     isMounted: false,
-    onMounted: () => { },
-    onAfterMounted: () => { },
-    onUnmounted: () => { },
+    onMounted: () => {},
+    onAfterMounted: () => {},
+    onUnmounted: () => {},
   };
 }
 
 export type AnyObservusElement = ObservusElement<StdElement>;
 
+export type AttrStringValue =
+  | string
+  | NullOrUndef
+  | Signal<string | NullOrUndef>;
 // setAttrFn is used when property-based attribute settings is impossible
 // for example: transform attribute on svg elements
 export type AttrSetStrategy = "property" | "setAttrFn";
@@ -201,11 +205,11 @@ export interface AttrSetter {
   kind: "AttrSetter";
   strategy: AttrSetStrategy;
   name: string;
-  value: string | NullOrUndef | Signal<string | NullOrUndef>;
+  value: AttrStringValue;
 }
 export function attr(
   name: string,
-  value: string | NullOrUndef | Signal<string | NullOrUndef>,
+  value: AttrStringValue,
   strategy: AttrSetStrategy = "property",
 ): AttrSetter {
   return {
@@ -215,10 +219,8 @@ export function attr(
     value,
   };
 }
-export function setAttr(
-  name: string,
-  value: string | NullOrUndef | Signal<string | NullOrUndef>,
-): AttrSetter {
+//TODO: remove later
+export function setAttr(name: string, value: AttrStringValue): AttrSetter {
   return attr(name, value, "setAttrFn");
 }
 
@@ -275,9 +277,7 @@ export interface TagSignalSetter {
   kind: "TagSignalSetter";
   value: Signal<AnyObservusElement>;
 }
-export function tagSignal(
-  value: Signal<ObservusElement<StdElement>>,
-): TagSignalSetter {
+export function tagSignal(value: Signal<AnyObservusElement>): TagSignalSetter {
   return {
     kind: "TagSignalSetter",
     value,
