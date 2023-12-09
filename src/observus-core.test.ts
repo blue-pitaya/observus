@@ -1,4 +1,4 @@
-import { AnyObservusElement } from "./observus-core";
+import { AnyObservusElement, combineMany, createState } from "./observus-core";
 import {
   attr,
   mount,
@@ -109,4 +109,44 @@ test("onAfterMounted is called in post-order fashion", () => {
   mount(document.body, el);
 
   expect(order).toEqual(["3", "2", "4", "1"]);
+});
+
+test("combined signal works correctly", () => {
+  const a = createState<string>("a");
+  const b = createState<string>("b");
+  const f = createState<string>("f");
+
+  const combined = combineMany<string, string>(
+    [a.signal(), b.signal(), f.signal()],
+    (acc, x) => {
+      return `${acc}${x}`;
+    },
+    "",
+  );
+
+  expect(combined.getValue()).toEqual("abf");
+  a.update(() => "w");
+  expect(combined.getValue()).toEqual("wbf");
+  b.update(() => "t");
+  expect(combined.getValue()).toEqual("wtf");
+});
+
+//as unintuitive as it is, it's just how javascript works
+//who am I to judge it?
+test("combined signal works for reference value", () => {
+  const a = createState<string>("a");
+  const b = createState<string>("b");
+
+  const combined = combineMany<string, string[]>(
+    [a.signal(), b.signal()],
+    (acc, x) => {
+      acc.push(x);
+      return acc;
+    },
+    [],
+  );
+
+  expect(combined.getValue()).toEqual(["a", "b"]);
+  a.update(() => "c");
+  expect(combined.getValue()).toEqual(["a", "b", "c", "b"]);
 });

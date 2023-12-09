@@ -1,10 +1,10 @@
 export interface State<A> {
   value: A;
-  observers: Array<Observer>;
+  observers: Observer[];
   set: (v: A) => void;
   update: (f: (v: A) => A) => void;
-  map: <B>(f: (v: A) => B) => Signal<B>;
   signal: () => Signal<A>;
+  map: <B>(f: (v: A) => B) => Signal<B>;
 }
 
 export interface Observer {
@@ -12,15 +12,15 @@ export interface Observer {
 }
 
 export interface Signal<A> {
-  sources: Array<State<any>>;
+  sources: State<any>[];
   getValue: () => A;
   map: <B>(f: (v: A) => B) => Signal<B>;
 }
 
-function mapState<A, B>(s: State<A>, f: (v: A) => B): Signal<B> {
+function createSignal<A>(s: State<A>): Signal<A> {
   return {
     sources: [s],
-    getValue: () => f(s.value),
+    getValue: () => s.value,
     map(f) {
       return mapSignal(this, f);
     },
@@ -48,11 +48,11 @@ export function createState<A>(initialValue: A): State<A> {
       this.value = f(this.value);
       this.observers.forEach((o) => o.next());
     },
-    map(f) {
-      return mapState(this, f);
-    },
     signal() {
-      return mapState(this, (x) => x);
+      return createSignal(this);
+    },
+    map(f) {
+      return mapSignal(this.signal(), f);
     },
   };
 }
@@ -101,13 +101,12 @@ export function combine<A, B, C>(
   };
 }
 
-/* defaultValue in case signals array is empty */
 export function combineMany<A, B>(
-  signals: Array<Signal<A>>,
+  signals: Signal<A>[],
   reduceFn: (acc: B, curr: A) => B,
   defaultValue: B,
 ): Signal<B> {
-  let sources: Array<State<A>> = [];
+  let sources: State<A>[] = [];
   const getters: Array<() => A> = [];
 
   signals.forEach((s) => {
@@ -131,7 +130,7 @@ export interface StateUpdateFn<A> {
   state: State<A>;
   fn: (v: A) => A;
 }
-export function updateMany(...updates: Array<StateUpdateFn<any>>) {
+export function updateMany(...updates: StateUpdateFn<any>[]) {
   let observersToUpdate: Set<Observer> = new Set();
   updates.forEach((u) => {
     u.state.value = u.fn(u.state.value);
@@ -147,7 +146,7 @@ export function flatten<A>(
   superSignal: Signal<Signal<A>>,
 ): [Signal<A>, FreeFn] {
   const proxyState = createState<A | undefined>(undefined);
-  let freeFn: () => void = () => {};
+  let freeFn: () => void = () => { };
   const free2 = observe(superSignal, (signal) => {
     freeFn();
     freeFn = observe(signal, (v) => {
@@ -170,7 +169,7 @@ type StdElement = HTMLElement | SVGElement;
 export interface ObservusElement<A extends StdElement> {
   kind: "ObservusElement";
   el: A;
-  children: Array<ObservusElement<A>>;
+  children: ObservusElement<A>[];
   freeResourcesFns: Array<() => void>;
   isMounted: boolean;
   onMounted: () => void;
@@ -186,9 +185,9 @@ function emptyObservusElement<A extends StdElement>(
     children: [],
     freeResourcesFns: [],
     isMounted: false,
-    onMounted: () => {},
-    onAfterMounted: () => {},
-    onUnmounted: () => {},
+    onMounted: () => { },
+    onAfterMounted: () => { },
+    onUnmounted: () => { },
   };
 }
 
@@ -196,7 +195,7 @@ export type AnyObservusElement = ObservusElement<StdElement>;
 
 // setAttrFn is used when property-based attribute settings is impossible
 // for example: transform attribute on svg elements
-type AttrSetStrategy = "property" | "setAttrFn";
+export type AttrSetStrategy = "property" | "setAttrFn";
 // if signal is null or undefined then property is removed
 export interface AttrSetter {
   kind: "AttrSetter";
@@ -252,7 +251,7 @@ export function textSignal(value: Signal<string>): TextSignalSetter {
 
 //TODO: better type:
 //addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-interface EventListenerSetter {
+export interface EventListenerSetter {
   kind: "EventListenerSetter";
   type: string;
   listener: <A extends Event>(e: A) => void;
@@ -272,7 +271,7 @@ export function on(
 }
 
 //TODO: better name: elementSignal?
-interface TagSignalSetter {
+export interface TagSignalSetter {
   kind: "TagSignalSetter";
   value: Signal<AnyObservusElement>;
 }
@@ -285,7 +284,7 @@ export function tagSignal(
   };
 }
 
-interface WithRefSetter {
+export interface WithRefSetter {
   kind: "WithRefSetter";
   fn: (el: StdElement) => Setter;
 }
@@ -296,7 +295,7 @@ export function withRef(fn: (el: StdElement) => Setter): WithRefSetter {
   };
 }
 
-interface MountedCallbackSetter {
+export interface MountedCallbackSetter {
   kind: "MountedCallbackSetter";
   fn: (el: StdElement) => void;
 }
@@ -307,7 +306,7 @@ export function onMounted(fn: (el: StdElement) => void): MountedCallbackSetter {
   };
 }
 
-interface AfterMountedCallbackSetter {
+export interface AfterMountedCallbackSetter {
   kind: "AfterMountedCallbackSetter";
   fn: (el: StdElement) => void;
 }
@@ -320,7 +319,7 @@ export function onAfterMounted(
   };
 }
 
-interface UnmountedCallbackSetter {
+export interface UnmountedCallbackSetter {
   kind: "UnmountedCallbackSetter";
   fn: () => void;
 }
@@ -381,7 +380,7 @@ export function mount(root: Element, el: AnyObservusElement) {
   callOnMountedOnTree(el);
 }
 
-export type Children = Array<Setter>;
+export type Children = Setter[];
 
 export function tag<A extends HTMLElement>(name: string, ...ch: Children) {
   return createTag<A>(name, false, ...ch);

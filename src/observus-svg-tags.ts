@@ -1,6 +1,6 @@
 import { Setter, svgTag } from "./observus-core";
 
-type C = Array<Setter>;
+type C = Setter[];
 export const a = (...c: C) => svgTag<SVGAElement>("a", ...c);
 export const animate = (...c: C) => svgTag<SVGAnimateElement>("animate", ...c);
 export const animateMotion = (...c: C) => svgTag<SVGAnimateMotionElement>("animateMotion", ...c);
