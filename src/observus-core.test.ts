@@ -1,4 +1,10 @@
-import { AnyObservusElement, combineMany, createState } from "./observus-core";
+import {
+  AnyObservusElement,
+  Signal,
+  combineMany,
+  createState,
+  tagsSignal,
+} from "./observus-core";
 import {
   attr,
   mount,
@@ -149,4 +155,20 @@ test("combined signal works for reference value", () => {
   expect(combined.getValue()).toEqual(["a", "b"]);
   a.update(() => "c");
   expect(combined.getValue()).toEqual(["a", "b", "c", "b"]);
+});
+
+test("tagsSignal work correctly", () => {
+  const values = createState<string[]>([]);
+  const tags: Signal<AnyObservusElement[]> = values.map((vs) =>
+    vs.map((v) => tag("span", v)),
+  );
+  const el = tag("div", "uno", tag("p", "dos"), tagsSignal(tags), "tres");
+
+  expect(el.el.innerHTML).toEqual("uno<p>dos</p>tres");
+  values.update(() => ["jeden", "dwa"]);
+  expect(el.el.innerHTML).toEqual(
+    "uno<p>dos</p><span>jeden</span><span>dwa</span>tres",
+  );
+  values.update(() => ["trzy"]);
+  expect(el.el.innerHTML).toEqual("uno<p>dos</p><span>trzy</span>tres");
 });

@@ -176,6 +176,7 @@ export interface ObservusElement<A extends StdElement> {
   onAfterMounted: () => void;
   onUnmounted: () => void;
 }
+//TODO: any?!
 function emptyObservusElement<A extends StdElement>(
   el: any,
 ): ObservusElement<A> {
@@ -284,6 +285,19 @@ export function tagSignal(value: Signal<AnyObservusElement>): TagSignalSetter {
   };
 }
 
+export interface TagsSignalSetter {
+  kind: "TagsSignalSetter";
+  value: Signal<AnyObservusElement[]>;
+}
+export function tagsSignal(
+  value: Signal<AnyObservusElement[]>,
+): TagsSignalSetter {
+  return {
+    kind: "TagsSignalSetter",
+    value,
+  };
+}
+
 export interface WithRefSetter {
   kind: "WithRefSetter";
   fn: (el: StdElement) => Setter;
@@ -339,6 +353,7 @@ export type Setter =
   | BoolAttrSetter
   | EventListenerSetter
   | TagSignalSetter
+  | TagsSignalSetter
   | WithRefSetter
   | MountedCallbackSetter
   | AfterMountedCallbackSetter
@@ -488,24 +503,54 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
     let lastValue: AnyObservusElement | null = null;
     const unobserve = observe(setter.value, (observusEl) => {
       if (lastValue !== null) {
-        o.children = o.children.map((child) => {
-          //child is replaced
-          if (child === lastValue) {
-            //TODO: think about strategy to free resources
-            return observusEl;
-          } else {
-            return child;
-          }
-        });
+        //TODO: use splice to avoid copy?
+        o.children = o.children.map((child) =>
+          child === lastValue ? observusEl : child,
+        );
         o.el.replaceChild(observusEl.el, lastValue.el);
       } else {
         appendChild(observusEl);
       }
+
       if (o.isMounted) {
         callOnMountedOnTree(observusEl);
       }
+
       lastValue = observusEl;
     });
+    o.freeResourcesFns.push(unobserve);
+  }
+
+  if (setter.kind == "TagsSignalSetter") {
+    let lastValue: AnyObservusElement[] | null = null;
+    const childrenStartIdx = o.children.length;
+
+    const unobserve = observe(setter.value, (els) => {
+      if (lastValue !== null) {
+        const childNodes = [...o.el.childNodes];
+        childNodes.splice(
+          childrenStartIdx,
+          lastValue.length,
+          ...els.map((e) => e.el),
+        );
+        o.children.splice(childrenStartIdx, lastValue.length, ...els);
+
+        o.el.replaceChildren(...childNodes);
+      } else {
+        els.forEach((el) => {
+          appendChild(el);
+        });
+      }
+
+      if (o.isMounted) {
+        els.forEach((el) => {
+          callOnMountedOnTree(el);
+        });
+      }
+
+      lastValue = els;
+    });
+
     o.freeResourcesFns.push(unobserve);
   }
 
