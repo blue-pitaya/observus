@@ -171,7 +171,7 @@ export interface LifecycleCallbacks {
   onAfterMounted: () => void;
   onUnmounted: () => void;
 }
-function emptyLifecycleCallbacks(): LifecycleCallbacks {
+export function emptyLifecycleCallbacks(): LifecycleCallbacks {
   return {
     onMounted: () => {},
     onAfterMounted: () => {},
@@ -185,7 +185,7 @@ export interface ObservusElement<A extends StdElement> {
   children: ObservusElement<A>[];
   freeResourcesFns: Array<() => void>;
   isMounted: boolean;
-  lifecycleCallbacks: LifecycleCallbacks;
+  lifecycle: LifecycleCallbacks;
 }
 //TODO: any?!
 function emptyObservusElement<A extends StdElement>(
@@ -197,7 +197,7 @@ function emptyObservusElement<A extends StdElement>(
     children: [],
     freeResourcesFns: [],
     isMounted: false,
-    lifecycleCallbacks: emptyLifecycleCallbacks(),
+    lifecycle: emptyLifecycleCallbacks(),
   };
 }
 
@@ -372,7 +372,7 @@ function callOnMountedOnTree(el: AnyObservusElement) {
   let wasMounted = el.isMounted;
   if (!wasMounted) {
     el.isMounted = true;
-    el.lifecycleCallbacks.onMounted();
+    el.lifecycle.onMounted();
   }
 
   el.children.forEach((child) => {
@@ -380,7 +380,7 @@ function callOnMountedOnTree(el: AnyObservusElement) {
   });
 
   if (!wasMounted) {
-    el.lifecycleCallbacks.onAfterMounted();
+    el.lifecycle.onAfterMounted();
   }
 }
 
@@ -388,7 +388,7 @@ function callOnMountedOnTree(el: AnyObservusElement) {
 export function free(el: AnyObservusElement) {
   if (el.isMounted) {
     el.isMounted = false;
-    el.lifecycleCallbacks.onMounted();
+    el.lifecycle.onMounted();
     el.freeResourcesFns.forEach((fn) => {
       fn();
     });
@@ -569,19 +569,19 @@ function handleSetter(setter: Setter, o: AnyObservusElement) {
   }
 
   if (setter.kind == "MountedCallbackSetter") {
-    o.lifecycleCallbacks.onMounted = () => {
+    o.lifecycle.onMounted = () => {
       setter.fn(o.el);
     };
   }
 
   if (setter.kind == "AfterMountedCallbackSetter") {
-    o.lifecycleCallbacks.onAfterMounted = () => {
+    o.lifecycle.onAfterMounted = () => {
       setter.fn(o.el);
     };
   }
 
   if (setter.kind == "UnmountedCallbackSetter") {
-    o.lifecycleCallbacks.onUnmounted = () => {
+    o.lifecycle.onUnmounted = () => {
       setter.fn();
     };
   }
