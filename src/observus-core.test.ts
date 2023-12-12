@@ -19,13 +19,15 @@ function mounted(el: AnyObservusElement): AnyObservusElement {
   return el;
 }
 
-test("mount removes all pre-existing children of root element", () => {
+test("mount append observus element as last child of root element", () => {
   document.body.innerHTML = '<div id="app"><span>trololo</span></div>';
   const root = document.querySelector("#app")!;
 
-  mount(root, tag("div"));
+  mount(root, tag("div", "hi"));
 
-  expect(root.childNodes.length).toEqual(1);
+  expect(document.body.innerHTML).toEqual(
+    '<div id="app"><span>trololo</span><div>hi</div></div>',
+  );
 });
 
 test("string is treated as text node", () => {

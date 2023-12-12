@@ -399,7 +399,6 @@ export function free(el: AnyObservusElement) {
 }
 
 export function mount(root: Element, el: AnyObservusElement) {
-  root.innerHTML = "";
   root.appendChild(el.el);
   callOnMountedOnTree(el);
 }
