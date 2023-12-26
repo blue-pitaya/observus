@@ -207,6 +207,10 @@ export type AttrStringValue =
   | string
   | NullOrUndef
   | Signal<string | NullOrUndef>;
+export type AttrNumberValue =
+  | number
+  | NullOrUndef
+  | Signal<number | NullOrUndef>;
 // setAttrFn is used when property-based attribute settings is impossible
 // for example: transform attribute on svg elements
 export type AttrSetStrategy = "property" | "setAttrFn";
@@ -228,6 +232,25 @@ export function attr(
     name,
     value,
   };
+}
+export function numAttr(
+  name: string,
+  value: AttrNumberValue,
+  strategy: AttrSetStrategy = "property",
+): AttrSetter {
+  let strValue: AttrStringValue;
+
+  if (value == null || value == undefined) {
+    strValue = value;
+  } else if (typeof value == "number") {
+    strValue = value.toString();
+  } else {
+    strValue = value.map((v) =>
+      v == undefined || v == null ? v : v.toString(),
+    );
+  }
+
+  return attr(name, strValue, strategy);
 }
 //TODO: remove later
 export function setAttr(name: string, value: AttrStringValue): AttrSetter {

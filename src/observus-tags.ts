@@ -116,7 +116,7 @@ export const tr = (...c: C) => tag<HTMLTableRowElement>("tr", ...c);
 export const track = (...c: C) => tag<HTMLTrackElement>("track", ...c);
 export const u = (...c: C) => tag<HTMLElement>("u", ...c);
 export const ul = (...c: C) => tag<HTMLUListElement>("ul", ...c);
-// added "Tag" suffix to avoid conflict with JS keyword
+// added "Tag" suffix to avoid conflict with TS keyword
 export const varTag = (...c: C) => tag<HTMLElement>("var", ...c);
 export const video = (...c: C) => tag<HTMLVideoElement>("video", ...c);
 export const wbr = (...c: C) => tag<HTMLElement>("wbr", ...c);
