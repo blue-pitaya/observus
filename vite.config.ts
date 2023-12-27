@@ -10,6 +10,7 @@ export default defineConfig({
     lib: {
       // Could also be a dictionary or array of multiple entry points
       entry: {
+        observus: resolve(__dirname, "src/observus.ts"),
         "observus-core": resolve(__dirname, "src/observus-core.ts"),
         "observus-helpers": resolve(__dirname, "src/observus-helpers.ts"),
         "observus-tags": resolve(__dirname, "src/observus-tags.ts"),

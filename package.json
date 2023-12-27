@@ -15,47 +15,44 @@
   "license": "MIT",
   "type": "module",
   "files": [
-    "dist"
+    "lib"
   ],
-  "module": "./dist/observus-core.js",
-  "main": "./dist/observus-core.cjs",
-  "types": "./dist/observus-core.d.ts",
+  "module": "./lib/observus.js",
+  "main": "./lib/observus.cjs",
+  "types": "./lib/observus.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/observus-core.d.ts",
-        "default": "./dist/observus-core.js"
-      },
-      "require": {
-        "types": "./dist/observus-core.d.ts",
-        "default": "./dist/observus-core.cjs"
-      }
+      "import": "./lib/observus.js",
+      "require": "./lib/observus.cjs",
+      "types": "./lib/observus.d.ts"
+    },
+    "./core": {
+      "import": "./lib/observus-core.js",
+      "require": "./lib/observus-core.cjs",
+      "types": "./lib/observus-core.d.ts"
     },
     "./helpers": {
-      "import": "./dist/observus-helpers.js",
-      "require": "./dist/observus-helpers.cjs"
+      "import": "./lib/observus-helpers.js",
+      "require": "./lib/observus-helpers.cjs",
+      "types": "./lib/observus-helpers.d.ts"
     },
     "./tags": {
-      "import": {
-        "types": "./dist/observus-tags.d.ts",
-        "default": "./dist/observus-tags.js"
-      },
-      "require": {
-        "types": "./dist/observus-tags.d.ts",
-        "default": "./dist/observus-tags.cjs"
-      }
+      "import": "./lib/observus-tags.js",
+      "require": "./lib/observus-tags.cjs",
+      "types": "./lib/observus-tags.d.ts"
     },
     "./attributes": {
-      "import": "./dist/observus-attributes.js",
-      "require": "./dist/observus-attributes.cjs"
+      "import": "./lib/observus-attributes.js",
+      "require": "./lib/observus-attributes.cjs",
+      "types": "./lib/observus-attributes.d.ts"
     },
     "./svg-tags": {
-      "import": "./dist/observus-svg-tags.js",
-      "require": "./dist/observus-svg-tags.cjs"
+      "import": "./lib/observus-svg-tags.js",
+      "require": "./lib/observus-svg-tags.cjs"
     },
     "./svg-attributes": {
-      "import": "./dist/observus-svg-attributes.js",
-      "require": "./dist/observus-svg-attributes.cjs"
+      "import": "./lib/observus-svg-attributes.js",
+      "require": "./lib/observus-svg-attributes.cjs"
     }
   },
   "scripts": {
