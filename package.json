@@ -1,6 +1,6 @@
 {
   "name": "observus",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Simple and minimal reactive UI library for web.",
   "author": "blue-pitaya <blue-pitaya@pm.me>",
   "keywords": [
@@ -19,18 +19,31 @@
   ],
   "module": "./dist/observus-core.js",
   "main": "./dist/observus-core.cjs",
+  "types": "./dist/observus-core.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/observus-core.js",
-      "require": "./dist/observus-core.cjs"
+      "import": {
+        "types": "./dist/observus-core.d.ts",
+        "default": "./dist/observus-core.js"
+      },
+      "require": {
+        "types": "./dist/observus-core.d.ts",
+        "default": "./dist/observus-core.cjs"
+      }
     },
     "./helpers": {
       "import": "./dist/observus-helpers.js",
       "require": "./dist/observus-helpers.cjs"
     },
     "./tags": {
-      "import": "./dist/observus-tags.js",
-      "require": "./dist/observus-tags.cjs"
+      "import": {
+        "types": "./dist/observus-tags.d.ts",
+        "default": "./dist/observus-tags.js"
+      },
+      "require": {
+        "types": "./dist/observus-tags.d.ts",
+        "default": "./dist/observus-tags.cjs"
+      }
     },
     "./attributes": {
       "import": "./dist/observus-attributes.js",
