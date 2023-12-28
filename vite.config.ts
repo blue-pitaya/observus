@@ -8,9 +8,9 @@ export default defineConfig({
     emptyOutDir: true,
     outDir: "lib",
     lib: {
-      // Could also be a dictionary or array of multiple entry points
       entry: {
         "observus-core": resolve(__dirname, "src/observus-core.ts"),
+        "observus-bindings": resolve(__dirname, "src/observus-bindings.ts"),
         "observus-helpers": resolve(__dirname, "src/observus-helpers.ts"),
         "observus-tags": resolve(__dirname, "src/observus-tags.ts"),
         "observus-attributes": resolve(__dirname, "src/observus-attributes.ts"),

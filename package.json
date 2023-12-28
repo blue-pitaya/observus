@@ -26,6 +26,11 @@
       "require": "./lib/observus-core.cjs",
       "types": "./lib/observus-core.d.ts"
     },
+    "./bindings": {
+      "import": "./lib/observus-bindings.js",
+      "require": "./lib/observus-bindings.cjs",
+      "types": "./lib/observus-bindings.d.ts"
+    },
     "./helpers": {
       "import": "./lib/observus-helpers.js",
       "require": "./lib/observus-helpers.cjs",
