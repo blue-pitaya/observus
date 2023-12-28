@@ -1,5 +1,4 @@
-import { State, observe } from "./observus-core";
-import { div, li, ul } from "./observus-tags";
+import { Signal, State, observe } from "./observus-core";
 
 class BindingError extends Error {
   constructor(message: string) {
@@ -26,10 +25,20 @@ export interface TagBinder<A extends HTMLElement> {
 
 export interface TextBinder {
   kind: "TextBinder";
-  state: State<string>;
+  signal: Signal<string>;
+  update: (v: string) => void;
 }
 
-export type Binder = TagBinder<HTMLElement> | TextBinder;
+export interface TagListBinding {}
+
+export interface AttrBinding {
+  kind: "AttrBinding";
+  attrName: string;
+  signal: Signal<string>;
+  update: (v: string) => void;
+}
+
+export type Binder = TagBinder<HTMLElement> | TextBinder | AttrBinding;
 
 export function bindTag<A extends HTMLElement>(
   name: string,
@@ -42,11 +51,36 @@ export function bindTag<A extends HTMLElement>(
   };
 }
 
-export function bindText(state: State<string>): TextBinder {
+//TODO: helper function for State<string>?
+export function bindText(
+  signal: Signal<string>,
+  update: (v: string) => void,
+): TextBinder {
   return {
     kind: "TextBinder",
-    state,
+    signal,
+    update,
   };
+}
+
+export function bindAttr(
+  name: string,
+  signal: Signal<string>,
+  update: (v: string) => void,
+): AttrBinding {
+  return {
+    kind: "AttrBinding",
+    attrName: name,
+    signal,
+    update,
+  };
+}
+
+export function bindTagList<A>(
+  tagTemplate: TagBinder<HTMLElement>,
+  listState: State<State<A>[]>,
+): TagListBinding {
+  return {};
 }
 
 function namesEqual(node: Node, binding: TagBinder<HTMLElement>): boolean {
@@ -71,14 +105,10 @@ export function bindToDom(
 
   binding.el = el;
 
-  console.log(binding);
-  console.log(el);
-  console.log(el.id);
-
   const elChildNodes = el.childNodes;
   let childNodeIdx = 0;
 
-  binding.children.forEach((child) => {
+  binding.children.forEach((childBinding) => {
     if (childNodeIdx >= elChildNodes.length) {
       throw new BindingError("elements not found");
     }
@@ -87,22 +117,38 @@ export function bindToDom(
       const childEl = elChildNodes[childNodeIdx];
 
       if (
-        child.kind == "TagBinder" &&
+        childBinding.kind == "TagBinder" &&
         nodeIsElement(childEl) &&
-        namesEqual(childEl, child)
+        namesEqual(childEl, childBinding)
       ) {
         //FIXME: fake HTML type
-        bindToDom(childEl as HTMLElement, child);
+        bindToDom(childEl as HTMLElement, childBinding);
         break;
       }
 
-      if (child.kind == "TextBinder" && nodeIsText(childEl)) {
+      if (childBinding.kind == "TextBinder" && nodeIsText(childEl)) {
         if (childEl.textContent == null) {
           throw new BindingError("bad text content");
         }
-        child.state.set(childEl.textContent);
-        observe(child.state.signal(), (v) => {
+        childBinding.update(childEl.textContent);
+        //TODO: make sure callback is not fired immidetaly
+        observe(childBinding.signal, (v) => {
           childEl.textContent = v;
+        });
+        break;
+      }
+
+      if (childBinding.kind == "AttrBinding") {
+        const attrValue = el.getAttribute(childBinding.attrName)
+        if (attrValue == null) {
+          throw new BindingError("missing attribute attribute");
+        }
+
+        childBinding.update(attrValue);
+        //TODO: make sure callback is not fired immidetaly
+        observe(childBinding.signal, (v) => {
+          //TODO: add strategy similar as in normal observus
+          el.setAttribute(childBinding.attrName, v);
         });
         break;
       }
