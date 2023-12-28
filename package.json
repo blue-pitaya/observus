@@ -17,16 +17,11 @@
   "files": [
     "lib"
   ],
-  "module": "./lib/observus.js",
-  "main": "./lib/observus.cjs",
-  "types": "./lib/observus.d.ts",
+  "module": "./lib/observus-core.js",
+  "main": "./lib/observus-core.cjs",
+  "types": "./lib/observus-core.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/observus.js",
-      "require": "./lib/observus.cjs",
-      "types": "./lib/observus.d.ts"
-    },
-    "./core": {
       "import": "./lib/observus-core.js",
       "require": "./lib/observus-core.cjs",
       "types": "./lib/observus-core.d.ts"
@@ -48,11 +43,13 @@
     },
     "./svg-tags": {
       "import": "./lib/observus-svg-tags.js",
-      "require": "./lib/observus-svg-tags.cjs"
+      "require": "./lib/observus-svg-tags.cjs",
+      "types": "./lib/observus-svg-tags.d.ts"
     },
     "./svg-attributes": {
       "import": "./lib/observus-svg-attributes.js",
-      "require": "./lib/observus-svg-attributes.cjs"
+      "require": "./lib/observus-svg-attributes.cjs",
+      "types": "./lib/observus-svg-attributes.d.ts"
     }
   },
   "scripts": {
