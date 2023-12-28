@@ -6,7 +6,7 @@ import {
   bindText,
   bindToDom,
 } from "./observus-bindings";
-import { State, createState } from "./observus-core";
+import { State, createState, on } from "./observus-core";
 
 test("bind span text with strict parent structure", () => {
   document.body.innerHTML = `
@@ -111,3 +111,37 @@ test("bind span text and attribute to complex model", () => {
   expect(document.querySelector("span")!.textContent).toEqual("yolo");
   expect(document.querySelector("span")!.getAttribute("id")).toEqual("10");
 });
+
+test("add onclick listener on button", () => {
+  document.body.innerHTML = `
+  <div>
+    <button>btn</button>
+  </div>
+  `;
+  let clicked = false;
+  const binding = bindTag(
+    "div",
+    bindTag(
+      "button",
+      on("click", () => {
+        clicked = true;
+      }),
+    ),
+  );
+
+  bindToDom(document.querySelector("div")!, binding);
+  document.querySelector("button")!.click();
+  expect(clicked).toEqual(true);
+});
+
+//test("bind list", () => {
+//  document.body.innerHTML = `
+//  <ul id="list">
+//    <button>btn 1</button>
+//    <button>btn 2</button>
+//    <button>btn 3</button>
+//  </ul>
+//  `;
+//  const items = createState<State<string>[]>([]);
+//  //const binding = bindTag("ul", bindTagList())
+//});

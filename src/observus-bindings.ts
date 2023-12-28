@@ -1,4 +1,4 @@
-import { Signal, State, observe } from "./observus-core";
+import { EventListenerSetter, Signal, State, observe } from "./observus-core";
 
 class BindingError extends Error {
   constructor(message: string) {
@@ -38,7 +38,11 @@ export interface AttrBinding {
   update: (v: string) => void;
 }
 
-export type Binder = TagBinder<HTMLElement> | TextBinder | AttrBinding;
+export type Binder =
+  | TagBinder<HTMLElement>
+  | TextBinder
+  | AttrBinding
+  | EventListenerSetter;
 
 export function bindTag<A extends HTMLElement>(
   name: string,
@@ -77,7 +81,7 @@ export function bindAttr(
 }
 
 export function bindTagList<A>(
-  tagTemplate: TagBinder<HTMLElement>,
+  stateBuilder: (s: State<A>) => TagBinder<HTMLElement>,
   listState: State<State<A>[]>,
 ): TagListBinding {
   return {};
@@ -139,7 +143,7 @@ export function bindToDom(
       }
 
       if (childBinding.kind == "AttrBinding") {
-        const attrValue = el.getAttribute(childBinding.attrName)
+        const attrValue = el.getAttribute(childBinding.attrName);
         if (attrValue == null) {
           throw new BindingError("missing attribute attribute");
         }
@@ -151,6 +155,14 @@ export function bindToDom(
           el.setAttribute(childBinding.attrName, v);
         });
         break;
+      }
+
+      if (childBinding.kind == "EventListenerSetter") {
+        el.addEventListener(
+          childBinding.type,
+          childBinding.listener,
+          childBinding.options,
+        );
       }
 
       childNodeIdx++;
