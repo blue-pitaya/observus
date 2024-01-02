@@ -1,6 +1,9 @@
 import {
+  AnyObservusElement,
   AttrSetStrategy,
   AttrStringValue,
+  EventListenerSetter,
+  NullOrUndef,
   Signal,
   observe,
 } from "./observus-core";
@@ -32,7 +35,17 @@ export interface GetAttrBinding {
   fn: SetNullableStringFn;
 }
 
-export type Binding = TagBinding | TextBinding | AttrBinding | GetAttrBinding;
+export interface ElementSignalSetter {
+  kind: "ElemntSignalSetter";
+  value: Signal<AnyObservusElement | NullOrUndef>;
+}
+
+export type Binding =
+  | TagBinding
+  | TextBinding
+  | AttrBinding
+  | GetAttrBinding
+  | EventListenerSetter;
 
 type SetStringFn = (v: string) => void;
 type SetNullableStringFn = (v: string | null) => void;
@@ -96,10 +109,10 @@ export function mountBinding(binding: TagBinding): void {
     throw new Error("invalid selector");
   }
 
-  mountBindings(root, binding.children);
+  mountBindings(root, ...binding.children);
 }
 
-export function mountBindings(root: Element, bindings: Binding[]): void {
+export function mountBindings(root: Element, ...bindings: Binding[]): void {
   bindings.forEach((binding) => {
     if (binding.kind == "TagBinding") {
       const child = root.querySelector(binding.selector);
@@ -107,7 +120,7 @@ export function mountBindings(root: Element, bindings: Binding[]): void {
         throw new Error("invalid selector");
       }
 
-      mountBindings(child, binding.children);
+      mountBindings(child, ...binding.children);
     }
 
     if (binding.kind == "TextBinding") {
@@ -120,7 +133,7 @@ export function mountBindings(root: Element, bindings: Binding[]): void {
         binding.fn(content);
       }
       if (binding.signal !== undefined) {
-        //TODO: make sure callback is not fired immidetaly
+        //TODO: allow user to set in options if it should fire immidetaly
         observe(binding.signal, (v) => {
           root.textContent = v;
         });
@@ -129,6 +142,10 @@ export function mountBindings(root: Element, bindings: Binding[]): void {
 
     if (binding.kind == "GetAttrBinding") {
       binding.fn(root.getAttribute(binding.name));
+    }
+
+    if (binding.kind == "EventListenerSetter") {
+      root.addEventListener(binding.type, binding.listener, binding.options);
     }
 
     //FIXME: code dup
