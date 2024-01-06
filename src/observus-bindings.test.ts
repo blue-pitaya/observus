@@ -1,4 +1,3 @@
-import { data } from "./observus-attributes";
 import {
   bindText,
   bind,
@@ -12,7 +11,7 @@ import {
   bindAttr,
   getAttr,
 } from "./observus-bindings";
-import { State, createState, on } from "./observus-core";
+import { createState } from "./observus-core";
 
 test("get initial span text inside 2 divs to state", () => {
   document.body.innerHTML = `

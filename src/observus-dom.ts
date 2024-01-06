@@ -2,58 +2,64 @@ import { Signal, observe } from "./observus-core";
 
 export type NullOrUndef = null | undefined;
 
-interface ElementSetter {
+export interface ElementSetter {
   kind: "ElementSetter";
   tagName: string;
   tagNamespace: string | null;
   children: Setter[];
 }
 
-type AttrStringValue = string | NullOrUndef | Signal<string | NullOrUndef>;
+export type AttrStringValue =
+  | string
+  | NullOrUndef
+  | Signal<string | NullOrUndef>;
 
-type AttrNumberValue = number | NullOrUndef | Signal<number | NullOrUndef>;
+export type AttrNumberValue =
+  | number
+  | NullOrUndef
+  | Signal<number | NullOrUndef>;
 
-type AttrBoolValue = boolean | Signal<boolean>;
+export type AttrBoolValue = boolean | Signal<boolean>;
 
-type AttrSetStrategy = "property" | "setAttrFn";
+export type AttrSetStrategy = "property" | "setAttrFn";
 
-interface AttrSetter {
+export interface AttrSetter {
   kind: "AttrSetter";
   name: string;
   value: AttrStringValue;
   strategy: AttrSetStrategy;
 }
 
-interface BoolAttrSetter {
+export interface BoolAttrSetter {
   kind: "BoolAttrSetter";
   name: string;
   value: AttrBoolValue;
 }
 
-interface TextSignalSetter {
+export interface TextSignalSetter {
   kind: "TextSignalSetter";
   value: Signal<string>;
 }
 
 //TODO: proper types from ts
-interface EventListenerSetter {
+export interface EventListenerSetter {
   kind: "EventListenerSetter";
   type: string;
   listener: <A extends Event>(e: A) => void;
   options?: boolean | AddEventListenerOptions;
 }
 
-interface ElementSignalSetter {
+export interface ElementSignalSetter {
   kind: "ElementSignalSetter";
   value: Signal<ElementSetter>;
 }
 
-interface WithRefSetter {
+export interface WithRefSetter {
   kind: "WithRefSetter";
   fn: (el: Element) => Setter;
 }
 
-type Setter =
+export type Setter =
   | ElementSetter
   | AttrSetter
   | BoolAttrSetter
@@ -78,10 +84,10 @@ function createTag(
   };
 }
 
-export const tag = (name: string, ...ch: Setter[]): ElementSetter =>
+export const tag = <A>(name: string, ...ch: Setter[]): ElementSetter =>
   createTag(name, false, ...ch);
 
-export const svgTag = (name: string, ...ch: Setter[]): ElementSetter =>
+export const svgTag = <A>(name: string, ...ch: Setter[]): ElementSetter =>
   createTag(name, true, ...ch);
 
 export const attr = (
@@ -122,7 +128,13 @@ export const boolAttr = (
   value,
 });
 
-function buildElement(elementSetter: ElementSetter): Element {
+export function mount(root: Element, ...setters: Setter[]) {
+  setters.forEach((setter) => {
+    handleSetter(root, setter);
+  });
+}
+
+export function build(elementSetter: ElementSetter): Element {
   let element: Element;
 
   if (elementSetter.tagNamespace == null) {
@@ -143,7 +155,7 @@ function buildElement(elementSetter: ElementSetter): Element {
 
 function handleSetter(root: Element, setter: Setter) {
   if (setter.kind == "ElementSetter") {
-    root.appendChild(buildElement(setter));
+    root.appendChild(build(setter));
   }
 
   if (setter.kind == "AttrSetter") {
@@ -200,7 +212,7 @@ function handleSetter(root: Element, setter: Setter) {
   if (setter.kind == "ElementSignalSetter") {
     let lastElement: Element | null = null;
     observe(setter.value, (elSetter) => {
-      const el = buildElement(elSetter);
+      const el = build(elSetter);
       if (lastElement !== null) {
         root.replaceChild(el, lastElement);
       } else {

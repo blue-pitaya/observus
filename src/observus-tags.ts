@@ -1,8 +1,8 @@
-import { Children, tag } from "./observus-core";
+import { Setter, tag } from "./observus-dom";
 
 //Tags from typescript DOM lib 5.2.2 (typescript/lib/lib.dom.d.ts)
 
-type C = Children;
+type C = Setter[];
 
 export const a = (...c: C) => tag<HTMLAnchorElement>("a", ...c);
 export const abbr = (...c: C) => tag<HTMLElement>("abbr", ...c);
