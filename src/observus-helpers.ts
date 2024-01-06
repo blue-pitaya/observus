@@ -1,18 +1,19 @@
 import {
-  AnyObservusElement,
   AttrSetter,
   FreeFn,
+  InContextCallback,
   NullOrUndef,
   Signal,
   State,
   attr,
-  combineMany,
   constSignal,
   createState,
-  free,
   observe,
+  inCtx,
+  combine,
+  ElementSetter,
+  build,
 } from "./observus-core";
-import { InContextCallback, inCtx } from "./observus-dom";
 
 interface HasId<A, B> {
   id: A;
@@ -23,12 +24,12 @@ interface HasId<A, B> {
 export function createElementsSignal<TId, TModel>(
   models: Signal<TModel[]>,
   getId: (m: TModel) => TId,
-  createElement: (m: TModel) => AnyObservusElement,
-): [FreeFn, Signal<AnyObservusElement[]>] {
-  const elements = createState<HasId<TId, AnyObservusElement>[]>([]);
+  createElement: (m: TModel) => ElementSetter,
+): [FreeFn, Signal<Element[]>] {
+  const elements = createState<HasId<TId, Element>[]>([]);
 
   const freeFn = observe(models, (ms) => {
-    const nextElements: HasId<TId, AnyObservusElement>[] = [];
+    const nextElements: HasId<TId, Element>[] = [];
 
     ms.forEach((model) => {
       const modelId = getId(model);
@@ -36,20 +37,20 @@ export function createElementsSignal<TId, TModel>(
       if (matchingElement) {
         nextElements.push(matchingElement);
       } else {
-        nextElements.push({ id: modelId, value: createElement(model) });
+        nextElements.push({ id: modelId, value: build(createElement(model)) });
       }
     });
 
-    const removedElements = elements.value.filter(
-      (x) => !ms.find((m) => getId(m) == x.id),
-    );
+    //const removedElements = elements.value.filter(
+    //  (x) => !ms.find((m) => getId(m) == x.id),
+    //);
 
     elements.set(nextElements);
 
     //TEST: i dont know if it is safe tbh
-    removedElements.forEach((el) => {
-      free(el.value);
-    });
+    //removedElements.forEach((el) => {
+    //  free(el.value);
+    //});
   });
 
   return [freeFn, elements.map((els) => els.map((x) => x.value))];
@@ -76,6 +77,16 @@ export function bindProxyState<A, B>(
     free1();
     free2();
   };
+}
+
+export function combineMany<A, B>(
+  signals: Signal<A>[],
+  reduceFn: (acc: B, curr: A) => B,
+  defaultValue: B,
+): Signal<B> {
+  return signals.reduce((acc, curr) => {
+    return combine(acc, curr, (b, a) => reduceFn(b, a));
+  }, constSignal(defaultValue));
 }
 
 //TODO: handle no styles + optional null signal in "obj"?

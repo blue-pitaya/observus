@@ -1,4 +1,4 @@
-import { AttrStringValue, attr } from "./observus-dom";
+import { AttrStringValue, attr } from "./observus-core";
 
 // Attrs generated from scalatags project "https://github.com/com-lihaoyi/scalatags"
 

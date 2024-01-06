@@ -1,4 +1,4 @@
-import { Setter, svgTag } from "./observus-dom";
+import { Setter, svgTag } from "./observus-core";
 
 //List generated from scraped data from MDN
 

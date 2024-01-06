@@ -5,7 +5,7 @@ import {
   attr,
   boolAttr,
   numAttr,
-} from "./observus-dom";
+} from "./observus-core";
 
 // List generated using script "create_attr_functions.pl"
 // List may be not complete and potentialy contains invalid attributes

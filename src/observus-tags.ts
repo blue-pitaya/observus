@@ -1,4 +1,4 @@
-import { Setter, tag } from "./observus-dom";
+import { Setter, tag } from "./observus-core";
 
 //Tags from typescript DOM lib 5.2.2 (typescript/lib/lib.dom.d.ts)
 
