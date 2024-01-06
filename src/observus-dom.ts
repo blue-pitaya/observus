@@ -54,19 +54,32 @@ export interface ElementSignalSetter {
   value: Signal<ElementSetter>;
 }
 
-export interface WithRefSetter {
-  kind: "WithRefSetter";
-  fn: (el: Element) => Setter;
+export interface ElementsArraySignalSetter {
+  kind: "ElementsArraySignalSetter";
+  value: Signal<ElementSetter[]>;
+}
+
+export interface InContextCallback {
+  kind: "InContextCallback";
+  fn: (el: Element) => void;
+}
+
+export interface OnMountedCallback {
+  kind: "OnMountedCallback";
+  fn: (el: Element) => void;
 }
 
 export type Setter =
+  | string
   | ElementSetter
   | AttrSetter
   | BoolAttrSetter
   | TextSignalSetter
   | EventListenerSetter
   | ElementSignalSetter
-  | WithRefSetter;
+  | ElementsArraySignalSetter
+  | InContextCallback
+  | OnMountedCallback;
 
 const isNullOrUndef = (v: any): v is NullOrUndef =>
   v === undefined || v === null;
@@ -128,6 +141,42 @@ export const boolAttr = (
   value,
 });
 
+export const textSignal = (value: Signal<string>): TextSignalSetter => ({
+  kind: "TextSignalSetter",
+  value,
+});
+
+//TODO: proper types from ts
+export const on = (
+  type: string,
+  listener: (e: Event) => void,
+  options?: boolean | AddEventListenerOptions,
+): EventListenerSetter => ({
+  kind: "EventListenerSetter",
+  type,
+  listener,
+  options,
+});
+
+export const elementSignal = (
+  value: Signal<ElementSetter>,
+): ElementSignalSetter => ({
+  kind: "ElementSignalSetter",
+  value,
+});
+
+export const elementsArraySignal = (
+  value: Signal<ElementSetter[]>,
+): ElementsArraySignalSetter => ({
+  kind: "ElementsArraySignalSetter",
+  value,
+});
+
+export const inCtx = (fn: (e: Element) => void): InContextCallback => ({
+  kind: "InContextCallback",
+  fn,
+});
+
 export function mount(root: Element, ...setters: Setter[]) {
   setters.forEach((setter) => {
     handleSetter(root, setter);
@@ -146,14 +195,29 @@ export function build(elementSetter: ElementSetter): Element {
     );
   }
 
+  let onMounted: OnMountedCallback | undefined;
+
   elementSetter.children.forEach((setter) => {
-    handleSetter(element, setter);
+    if (typeof setter !== "string" && setter.kind == "OnMountedCallback") {
+      onMounted = setter;
+    } else {
+      handleSetter(element, setter);
+    }
   });
+
+  if (onMounted !== undefined) {
+    onMounted.fn(element);
+  }
 
   return element;
 }
 
 function handleSetter(root: Element, setter: Setter) {
+  if (typeof setter === "string") {
+    root.appendChild(document.createTextNode(setter));
+    return;
+  }
+
   if (setter.kind == "ElementSetter") {
     root.appendChild(build(setter));
   }
@@ -223,7 +287,28 @@ function handleSetter(root: Element, setter: Setter) {
     });
   }
 
-  if (setter.kind == "WithRefSetter") {
-    handleSetter(root, setter.fn(root));
+  if (setter.kind == "ElementsArraySignalSetter") {
+    let lastElements: Element[] | null = null;
+    const elementsStartIndex = root.childNodes.length;
+
+    observe(setter.value, (elementSetters) => {
+      const elements = elementSetters.map((e) => build(e));
+
+      if (lastElements !== null) {
+        const childNodes = [...root.childNodes];
+        childNodes.splice(elementsStartIndex, lastElements.length, ...elements);
+        root.replaceChildren(...childNodes);
+      } else {
+        elements.forEach((el) => {
+          root.appendChild(el);
+        });
+      }
+
+      lastElements = elements;
+    });
+  }
+
+  if (setter.kind == "InContextCallback") {
+    setter.fn(root);
   }
 }

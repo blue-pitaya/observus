@@ -12,6 +12,7 @@ import {
   free,
   observe,
 } from "./observus-core";
+import { InContextCallback, inCtx } from "./observus-dom";
 
 interface HasId<A, B> {
   id: A;
@@ -107,3 +108,8 @@ export function styleObj(obj: StyleObj): AttrSetter {
 
   return attr("style", combinedSignal, "setAttrFn");
 }
+
+export const rawHtml = (value: string): InContextCallback =>
+  inCtx((el) => {
+    el.innerHTML += value;
+  });

@@ -101,6 +101,7 @@ export function combine<A, B, C>(
   };
 }
 
+//TODO: is it necessary here?
 export function combineMany<A, B>(
   signals: Signal<A>[],
   reduceFn: (acc: B, curr: A) => B,
@@ -251,10 +252,6 @@ export function numAttr(
   }
 
   return attr(name, strValue, strategy);
-}
-//TODO: remove later
-export function setAttr(name: string, value: AttrStringValue): AttrSetter {
-  return attr(name, value, "setAttrFn");
 }
 
 export interface BoolAttrSetter {
