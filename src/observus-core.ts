@@ -35,7 +35,7 @@ const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
   },
 });
 
-export const createState = <A>(initialValue: A): State<A> => ({
+export const state = <A>(initialValue: A): State<A> => ({
   value: initialValue,
   observers: [],
   set(v) {
@@ -91,10 +91,13 @@ export const combine = <A, B, C>(
   },
 });
 
+//TODO: remove later
 export interface StateUpdateFn<A> {
   state: State<A>;
   fn: (v: A) => A;
 }
+
+//TODO: update many in transaction callback
 export function updateMany(...updates: StateUpdateFn<any>[]) {
   let observersToUpdate: Set<Observer> = new Set();
   updates.forEach((u) => {
@@ -110,8 +113,8 @@ export function updateMany(...updates: StateUpdateFn<any>[]) {
 export function flatten<A>(
   superSignal: Signal<Signal<A>>,
 ): [Signal<A>, FreeFn] {
-  const proxyState = createState<A | undefined>(undefined);
-  let freeFn: () => void = () => { };
+  const proxyState = state<A | undefined>(undefined);
+  let freeFn: () => void = () => {};
   const free2 = observe(superSignal, (signal) => {
     freeFn();
     freeFn = observe(signal, (v) => {

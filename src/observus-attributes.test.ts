@@ -1,5 +1,5 @@
 import _ from "./observus-attributes";
-import { createState, tag } from "./observus-core";
+import { state, tag } from "./observus-core";
 
 //FIXME
 

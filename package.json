@@ -1,6 +1,6 @@
 {
   "name": "observus",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Simple and minimal reactive UI library for web.",
   "author": "blue-pitaya <blue-pitaya@pm.me>",
   "keywords": [
@@ -25,16 +25,6 @@
       "import": "./lib/observus-core.js",
       "require": "./lib/observus-core.cjs",
       "types": "./lib/observus-core.d.ts"
-    },
-    "./dom": {
-      "import": "./lib/observus-dom.js",
-      "require": "./lib/observus-dom.cjs",
-      "types": "./lib/observus-dom.d.ts"
-    },
-    "./bindings": {
-      "import": "./lib/observus-bindings.js",
-      "require": "./lib/observus-bindings.cjs",
-      "types": "./lib/observus-bindings.d.ts"
     },
     "./helpers": {
       "import": "./lib/observus-helpers.js",

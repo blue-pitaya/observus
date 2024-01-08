@@ -7,7 +7,7 @@ import {
   State,
   attr,
   constSignal,
-  createState,
+  state,
   observe,
   inCtx,
   combine,
@@ -26,7 +26,7 @@ export function createElementsSignal<TId, TModel>(
   getId: (m: TModel) => TId,
   createElement: (m: TModel) => ElementSetter,
 ): [FreeFn, Signal<Element[]>] {
-  const elements = createState<HasId<TId, Element>[]>([]);
+  const elements = state<HasId<TId, Element>[]>([]);
 
   const freeFn = observe(models, (ms) => {
     const nextElements: HasId<TId, Element>[] = [];
