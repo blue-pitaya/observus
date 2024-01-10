@@ -138,6 +138,7 @@ export interface ElementSetter {
   tagName: string;
   tagNamespace: string | null;
   children: Setter[];
+  extend: (...ch: Setter[]) => ElementSetter;
 }
 
 export type AttrStringValue =
@@ -227,12 +228,18 @@ function createTag(
   isSvg: boolean,
   ...ch: Setter[]
 ): ElementSetter {
-  return {
+  const setter: ElementSetter = {
     kind: "ElementSetter",
     tagName: name,
     tagNamespace: isSvg ? "http://www.w3.org/2000/svg" : null,
     children: ch,
+    extend: (...ch: Setter[]) => {
+      setter.children.push(...ch);
+      return setter;
+    },
   };
+
+  return setter;
 }
 
 export const tag = <A>(name: string, ...ch: Setter[]): ElementSetter =>

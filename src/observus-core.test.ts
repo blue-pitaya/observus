@@ -1,4 +1,4 @@
-import { build, customAttr, mount, tag } from "./observus-core";
+import { attr, build, customAttr, mount, tag } from "./observus-core";
 import { div } from "./observus-tags";
 
 test("null or undefined setters are ignored", () => {
@@ -28,6 +28,24 @@ test("null or undefined attributes are not added", () => {
   );
 
   expect(element.outerHTML).toBe('<div a2="foo"></div>');
+});
+
+test("extends appends new attributes", () => {
+  const component = tag("div", attr("id", "uno")).extend(
+    customAttr("role", "dos"),
+  );
+  const element = build(component);
+
+  expect(element.outerHTML).toBe('<div id="uno" role="dos"></div>');
+});
+
+test("extends replaces attributes", () => {
+  const component = tag("div", attr("id", "uno")).extend(
+    customAttr("id", "dos"),
+  );
+  const element = build(component);
+
+  expect(element.outerHTML).toBe('<div id="dos"></div>');
 });
 
 //function mounted(el: AnyObservusElement): AnyObservusElement {
