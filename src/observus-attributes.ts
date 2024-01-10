@@ -103,7 +103,7 @@ export default {
   href: (v: S) => attr("href", v), //HTMLBaseElement HTMLLinkElement
   hreflang: (v: S) => attr("hreflang", v), //HTMLAnchorElement HTMLLinkElement
   hspace: (v: N) => numAttr("hspace", v), //HTMLImageElement HTMLObjectElement
-  htmlFor: (v: S) => attr("htmlFor", v), //HTMLLabelElement HTMLScriptElement
+  htmlFor: (v: S) => attr("for", v), //HTMLLabelElement HTMLScriptElement
   httpEquiv: (v: S) => attr("httpEquiv", v), //HTMLMetaElement
   id: (v: S) => attr("id", v), //Element
   imageSizes: (v: S) => attr("imageSizes", v), //HTMLLinkElement
