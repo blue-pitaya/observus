@@ -1,12 +1,10 @@
 import _ from "./observus-attributes";
-import { state, tag } from "./observus-core";
+import { build, state, tag } from "./observus-core";
 
-//FIXME
+test("style attribute as signal dont create duplicates on change", () => {
+  const style = state("display: block;");
+  const element = build(tag("div", _.style(style.signal())));
+  style.set("display: flex;");
 
-//test("style as signal dont create duplicated on change", () => {
-//  const _style = createState<string>("display: block;");
-//  const el = tag("div", _.style(_style.signal()));
-//  _style.update(() => "display: flex;");
-//
-//  expect(el.el.getAttribute("style")).toEqual("display: flex;");
-//});
+  expect(element.getAttribute("style")).toEqual("display: flex;");
+});

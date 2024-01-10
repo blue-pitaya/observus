@@ -1,4 +1,4 @@
-import { attr, build, customAttr, mount, tag } from "./observus-core";
+import { build, customAttr, mount, tag } from "./observus-core";
 import { div } from "./observus-tags";
 
 test("null or undefined setters are ignored", () => {
