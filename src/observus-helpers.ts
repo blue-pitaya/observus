@@ -20,6 +20,38 @@ interface HasId<A, B> {
   value: B;
 }
 
+//TODO: test
+/* mappings MUST NOT throw */
+export function stateProxy<A, B>(
+  source: State<A>,
+  sourceMapping: (v: A) => B,
+  proxyMapping: (v: B) => A,
+) {
+  const proxy = state<B>(sourceMapping(source.value));
+
+  let sourceUpdating = false;
+  let proxyUpdating = false;
+
+  observe(source.signal(), (v) => {
+    if (!proxyUpdating) {
+      sourceUpdating = true;
+      proxy.set(sourceMapping(v));
+    } else {
+      proxyUpdating = false;
+    }
+  });
+  observe(proxy.signal(), (v) => {
+    if (!sourceUpdating) {
+      proxyUpdating = true;
+      source.set(proxyMapping(v));
+    } else {
+      sourceUpdating = false;
+    }
+  });
+
+  return proxy;
+}
+
 /* Creates reusable elements based on models and correspoding id */
 export function createElementsSignal<TId, TModel>(
   models: Signal<TModel[]>,
