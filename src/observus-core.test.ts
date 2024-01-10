@@ -1,36 +1,40 @@
-//import {
-//  AnyObservusElement,
-//  Signal,
-//  combineMany,
-//  createState,
-//  tagsSignal,
-//} from "./observus-core";
-//import {
-//  attr,
-//  mount,
-//  onAfterMounted,
-//  onMounted,
-//  setAttr,
-//  tag,
-//} from "./observus-core";
-//
-////FIXME:!!!
-//
+import { attr, build, customAttr, mount, tag } from "./observus-core";
+import { div } from "./observus-tags";
+
+test("null or undefined setters are ignored", () => {
+  const element = build(div("one", null, "two", undefined, "three"));
+
+  expect(element.outerHTML).toBe("<div>onetwothree</div>");
+});
+
+test("mount append observus element as last child of root element", () => {
+  document.body.innerHTML = '<div id="app"><span>trololo</span></div>';
+
+  mount(document.querySelector("#app")!, tag("div", "hi"));
+
+  expect(document.body.innerHTML).toBe(
+    '<div id="app"><span>trololo</span><div>hi</div></div>',
+  );
+});
+
+test("null or undefined attributes are not added", () => {
+  const element = build(
+    tag(
+      "div",
+      customAttr("a1", null),
+      customAttr("a2", "foo"),
+      customAttr("a3", undefined),
+    ),
+  );
+
+  expect(element.outerHTML).toBe('<div a2="foo"></div>');
+});
+
 //function mounted(el: AnyObservusElement): AnyObservusElement {
 //  mount(document.body, el);
 //  return el;
 //}
 //
-//test("mount append observus element as last child of root element", () => {
-//  document.body.innerHTML = '<div id="app"><span>trololo</span></div>';
-//  const root = document.querySelector("#app")!;
-//
-//  mount(root, tag("div", "hi"));
-//
-//  expect(document.body.innerHTML).toEqual(
-//    '<div id="app"><span>trololo</span><div>hi</div></div>',
-//  );
-//});
 //
 //test("string is treated as text node", () => {
 //  const textValue = "elo";
@@ -39,11 +43,6 @@
 //  expect(el.el.textContent).toBe(textValue);
 //});
 //
-//test("attribute that is null is not added", () => {
-//  const el = mounted(tag("div", setAttr("custom", null)));
-//
-//  expect(el.el.getAttribute("custom")).toBeNull();
-//});
 //
 //test("attribute that is undefined is not added", () => {
 //  const el = mounted(tag("div", setAttr("custom", undefined)));

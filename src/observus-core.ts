@@ -206,6 +206,7 @@ export interface OnMountedCallback {
 }
 
 export type Setter =
+  | NullOrUndef
   | string
   | ElementSetter
   | AttrSetter
@@ -249,6 +250,16 @@ export const attr = (
   name,
   value,
   strategy,
+});
+
+export const customAttr = (
+  name: string,
+  value: AttrStringValue,
+): AttrSetter => ({
+  kind: "AttrSetter",
+  name,
+  value,
+  strategy: "setAttrFn",
 });
 
 export function numAttr(
@@ -342,7 +353,11 @@ export function build(elementSetter: ElementSetter): Element {
   let onMounted: OnMountedCallback | undefined;
 
   elementSetter.children.forEach((setter) => {
-    if (typeof setter !== "string" && setter.kind == "OnMountedCallback") {
+    if (
+      !isNullOrUndef(setter) &&
+      typeof setter !== "string" &&
+      setter.kind == "OnMountedCallback"
+    ) {
       onMounted = setter;
     } else {
       handleSetter(element, setter);
@@ -357,6 +372,10 @@ export function build(elementSetter: ElementSetter): Element {
 }
 
 function handleSetter(root: Element, setter: Setter) {
+  if (isNullOrUndef(setter)) {
+    return;
+  }
+
   if (typeof setter === "string") {
     root.appendChild(document.createTextNode(setter));
     return;
