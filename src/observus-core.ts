@@ -334,6 +334,11 @@ export const hardElementsSignal = (
   value,
 });
 
+export const onMounted = (fn: (el: Element) => void): OnMountedCallback => ({
+  kind: "OnMountedCallback",
+  fn,
+});
+
 export const inCtx = (fn: (e: Element) => void): InContextCallback => ({
   kind: "InContextCallback",
   fn,
