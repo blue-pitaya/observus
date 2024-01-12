@@ -21,12 +21,11 @@ interface HasId<A, B> {
 }
 
 //TODO: test, test with updateMany
-//TODO: more clever update strategy
 /* mappings MUST NOT throw */
 export function stateProxy<A, B>(
   source: State<A>,
   sourceMapping: (v: A) => B,
-  proxyUpdate: (v: B) => void,
+  proxyUpdate: (s: A, v: B) => A,
 ) {
   const proxy = state<B>(sourceMapping(source.value));
 
@@ -43,7 +42,7 @@ export function stateProxy<A, B>(
   observe(proxy.signal(), (v) => {
     if (!sourceUpdating) {
       proxyUpdating = true;
-      proxyUpdate(v);
+      source.update((s) => proxyUpdate(s, v));
       proxyUpdating = false;
     }
   });
