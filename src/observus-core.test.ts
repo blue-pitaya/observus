@@ -1,4 +1,4 @@
-import { attr, build, customAttr, mount, tag } from "./observus-core";
+import { attr, build, customAttr, mount, state, tag } from "./observus-core";
 import { div } from "./observus-tags";
 
 test("null or undefined setters are ignored", () => {
@@ -46,6 +46,22 @@ test("extends replaces attributes", () => {
   const element = build(component);
 
   expect(element.outerHTML).toBe('<div id="dos"></div>');
+});
+
+//TODO: think about this
+test("huge amount of mapped signals wont throw stackoverflow", () => {
+  //const size = 100 * 1000;
+  const size = 1;
+  const s = state(0);
+  let signal = s.signal();
+  let i = 0;
+
+  //stack exceeded at 12333 on my machine
+  for (i = 0; i < size; i++) {
+    signal = signal.map((x) => x + 1);
+  }
+
+  expect(signal.getValue()).toBe(size);
 });
 
 //function mounted(el: AnyObservusElement): AnyObservusElement {

@@ -20,6 +20,18 @@ interface HasId<A, B> {
   value: B;
 }
 
+export interface SProxy<A> {
+  signal: Signal<A>;
+  update: (v: A) => void;
+}
+
+export const toProxy = <A>(state: State<A>): SProxy<A> => ({
+  signal: state.signal(),
+  update: (v) => {
+    state.set(v);
+  },
+});
+
 //TODO: test, test with updateMany
 /* mappings MUST NOT throw */
 export function stateProxy<A, B>(

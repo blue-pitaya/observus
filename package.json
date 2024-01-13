@@ -1,6 +1,6 @@
 {
   "name": "observus",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "description": "Simple and minimal reactive UI library for web.",
   "author": "blue-pitaya <blue-pitaya@pm.me>",
   "keywords": [

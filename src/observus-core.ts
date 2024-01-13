@@ -35,6 +35,7 @@ const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
   },
 });
 
+//TODO: rename to mkState?
 export const state = <A>(initialValue: A): State<A> => ({
   value: initialValue,
   observers: [],
@@ -114,7 +115,7 @@ export function flatten<A>(
   superSignal: Signal<Signal<A>>,
 ): [Signal<A>, FreeFn] {
   const proxyState = state<A | undefined>(undefined);
-  let freeFn: () => void = () => {};
+  let freeFn: () => void = () => { };
   const free2 = observe(superSignal, (signal) => {
     freeFn();
     freeFn = observe(signal, (v) => {
