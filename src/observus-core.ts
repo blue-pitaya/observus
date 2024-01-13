@@ -1,4 +1,5 @@
 export interface State<A> {
+  isSet: boolean;
   value: A;
   observers: Observer[];
   set: (v: A) => void;
@@ -15,6 +16,11 @@ export interface Signal<A> {
   sources: State<any>[];
   getValue: () => A;
   map: <B>(f: (v: A) => B) => Signal<B>;
+}
+
+export interface StateProxy<A> {
+  signal: Signal<A>;
+  update: (v: A) => void;
 }
 
 export type FreeFn = () => void;
@@ -36,14 +42,16 @@ const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
 });
 
 export const mkState = <A>(initialValue: A): State<A> => ({
+  isSet: true,
   value: initialValue,
   observers: [],
   set(v) {
-    this.update(() => v);
+    this.isSet = true;
+    this.value = v;
+    this.observers.forEach((o) => o.next());
   },
   update(f) {
-    this.value = f(this.value);
-    this.observers.forEach((o) => o.next());
+    this.set(f(this.value));
   },
   signal() {
     return createSignal(this);
@@ -78,6 +86,13 @@ export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
 
   return unobserveFn;
 }
+
+export const toProxy = <A>(state: State<A>): StateProxy<A> => ({
+  signal: state.signal(),
+  update: (v) => {
+    state.set(v);
+  },
+});
 
 export const combine = <A, B, C>(
   sa: Signal<A>,
@@ -114,7 +129,7 @@ export function flatten<A>(
   superSignal: Signal<Signal<A>>,
 ): [Signal<A>, FreeFn] {
   const proxyState = mkState<A | undefined>(undefined);
-  let freeFn: () => void = () => { };
+  let freeFn: () => void = () => {};
   const free2 = observe(superSignal, (signal) => {
     freeFn();
     freeFn = observe(signal, (v) => {

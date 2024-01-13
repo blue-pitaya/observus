@@ -1,4 +1,4 @@
-import { Observer  } from "./observus-core";
+import { Observer } from "./observus-core";
 
 // STILL IN DEVELOPMENT
 

@@ -20,48 +20,6 @@ interface HasId<A, B> {
   value: B;
 }
 
-export interface SProxy<A> {
-  signal: Signal<A>;
-  update: (v: A) => void;
-}
-
-export const toProxy = <A>(state: State<A>): SProxy<A> => ({
-  signal: state.signal(),
-  update: (v) => {
-    state.set(v);
-  },
-});
-
-//TODO: test, test with updateMany
-/* mappings MUST NOT throw */
-export function stateProxy<A, B>(
-  source: State<A>,
-  sourceMapping: (v: A) => B,
-  proxyUpdate: (s: A, v: B) => A,
-) {
-  const proxy = mkState<B>(sourceMapping(source.value));
-
-  let sourceUpdating = false;
-  let proxyUpdating = false;
-
-  observe(source.signal(), (v) => {
-    if (!proxyUpdating) {
-      sourceUpdating = true;
-      proxy.set(sourceMapping(v));
-      sourceUpdating = false;
-    }
-  });
-  observe(proxy.signal(), (v) => {
-    if (!sourceUpdating) {
-      proxyUpdating = true;
-      source.update((s) => proxyUpdate(s, v));
-      proxyUpdating = false;
-    }
-  });
-
-  return proxy;
-}
-
 /* Creates reusable elements based on models and correspoding id */
 export function createElementsSignal<TId, TModel>(
   models: Signal<TModel[]>,
