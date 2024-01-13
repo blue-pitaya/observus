@@ -1,4 +1,15 @@
-import { attr, build, customAttr, mount, mkState, tag } from "./observus-core";
+import {
+  attr,
+  build,
+  customAttr,
+  mount,
+  mkState,
+  tag,
+  observe,
+  combine,
+  updateMany,
+  lazySet,
+} from "./observus-core";
 import { div } from "./observus-tags";
 
 test("null or undefined setters are ignored", () => {
@@ -62,6 +73,30 @@ test("huge amount of mapped signals wont throw stackoverflow", () => {
   }
 
   expect(signal.getValue()).toBe(size);
+});
+
+test("lazy state sets will run unique observers once", () => {
+  const a = mkState(1);
+  const b = mkState("a");
+  const combined = combine(a.signal(), b.signal(), () => {
+    return {};
+  });
+
+  let times = 0;
+  observe(a.signal(), () => {
+    times++;
+  });
+  observe(b.signal(), () => {
+    times++;
+  });
+  observe(combined, () => {
+    times++;
+  });
+
+  updateMany(lazySet(a, 2), lazySet(b, "b"));
+
+  // 3 on bining + 3 from executeUpdated
+  expect(times).toBe(6);
 });
 
 //function mounted(el: AnyObservusElement): AnyObservusElement {

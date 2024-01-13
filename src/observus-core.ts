@@ -25,6 +25,8 @@ export interface StateProxy<A> {
 
 export type FreeFn = () => void;
 
+export type LazyStateSetter = () => Observer[];
+
 const createSignal = <A>(s: State<A>): Signal<A> => ({
   sources: [s],
   getValue: () => s.value,
@@ -106,18 +108,30 @@ export const combine = <A, B, C>(
   },
 });
 
-//TODO: remove later
-export interface StateUpdateFn<A> {
-  state: State<A>;
-  fn: (v: A) => A;
+export function lazySet<A>(state: State<A>, value: A): LazyStateSetter {
+  return () => {
+    state.isSet = true;
+    state.value = value;
+    return state.observers;
+  };
 }
 
-//TODO: update many in transaction callback
-export function updateMany(...updates: StateUpdateFn<any>[]) {
+export function lazyUpdate<A>(
+  state: State<A>,
+  fn: (v: A) => A,
+): LazyStateSetter {
+  return () => {
+    state.isSet = true;
+    state.value = fn(state.value);
+    return state.observers;
+  };
+}
+
+export function updateMany(...lazyStateSetters: LazyStateSetter[]) {
   let observersToUpdate: Set<Observer> = new Set();
-  updates.forEach((u) => {
-    u.state.value = u.fn(u.state.value);
-    u.state.observers.forEach((l) => observersToUpdate.add(l));
+  lazyStateSetters.forEach((setter) => {
+    const observers = setter();
+    observers.forEach((v) => observersToUpdate.add(v));
   });
 
   observersToUpdate.forEach((o) => o.next());
