@@ -1,8 +1,8 @@
-import { build, state, tag } from "./observus-core";
+import { build, mkState, tag } from "./observus-core";
 import { styleObj } from "./observus-helpers";
 
 test("styleObj parse signals correctly", () => {
-  const color = state("red");
+  const color = mkState("red");
   const element = build(
     tag(
       "div",
@@ -19,7 +19,7 @@ test("styleObj parse signals correctly", () => {
 });
 
 test("styleObj parse signals with undefined value correctly", () => {
-  const color = state<string | undefined>("red");
+  const color = mkState<string | undefined>("red");
   const element = build(
     tag(
       "div",

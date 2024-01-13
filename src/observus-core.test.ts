@@ -1,4 +1,4 @@
-import { attr, build, customAttr, mount, state, tag } from "./observus-core";
+import { attr, build, customAttr, mount, mkState, tag } from "./observus-core";
 import { div } from "./observus-tags";
 
 test("null or undefined setters are ignored", () => {
@@ -52,7 +52,7 @@ test("extends replaces attributes", () => {
 test("huge amount of mapped signals wont throw stackoverflow", () => {
   //const size = 100 * 1000;
   const size = 1;
-  const s = state(0);
+  const s = mkState(0);
   let signal = s.signal();
   let i = 0;
 

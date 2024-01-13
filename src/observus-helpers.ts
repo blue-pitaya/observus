@@ -7,7 +7,7 @@ import {
   State,
   attr,
   constSignal,
-  state,
+  mkState,
   observe,
   inCtx,
   combine,
@@ -39,7 +39,7 @@ export function stateProxy<A, B>(
   sourceMapping: (v: A) => B,
   proxyUpdate: (s: A, v: B) => A,
 ) {
-  const proxy = state<B>(sourceMapping(source.value));
+  const proxy = mkState<B>(sourceMapping(source.value));
 
   let sourceUpdating = false;
   let proxyUpdating = false;
@@ -68,7 +68,7 @@ export function createElementsSignal<TId, TModel>(
   getId: (m: TModel) => TId,
   createElement: (m: TModel) => ElementSetter,
 ): [FreeFn, Signal<Element[]>] {
-  const elements = state<HasId<TId, Element>[]>([]);
+  const elements = mkState<HasId<TId, Element>[]>([]);
 
   const freeFn = observe(models, (ms) => {
     const nextElements: HasId<TId, Element>[] = [];
