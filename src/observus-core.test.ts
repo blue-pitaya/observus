@@ -99,6 +99,38 @@ test("lazy state sets will run unique observers once", () => {
   expect(times).toBe(6);
 });
 
+test("observe dont run immidetaly", () => {
+  const state = mkState("foo");
+  let result: any = null;
+
+  observe(state.signal(), (value) => {
+    result = value;
+  });
+
+  expect(result).toBe(null);
+});
+
+test.only("observe is called only if observed signal has changed", () => {
+  const state = mkState({ a: 10, b: { b1: "foo", b2: "bar" }, c: "ok" });
+  let calls = 0;
+
+  observe(state.signal(), () => {
+    calls++;
+  });
+  observe(
+    state.map((v) => v.a),
+    () => {
+      calls++;
+    },
+  );
+  observe(
+    state.map((v) => v.b.b1),
+    () => {},
+  );
+
+  //state.update((v) => ({...v, }));
+});
+
 //function mounted(el: AnyObservusElement): AnyObservusElement {
 //  mount(document.body, el);
 //  return el;

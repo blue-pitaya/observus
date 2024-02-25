@@ -84,7 +84,6 @@ export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
       state.observers = state.observers.filter((o) => o !== observer);
     });
   };
-  observer.next();
 
   return unobserveFn;
 }
