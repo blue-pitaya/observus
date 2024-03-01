@@ -1,16 +1,38 @@
+import { isNullOrUndef, isSignal } from "./utils";
 import { observe } from "./core";
 
-function mkElement(tag: any, attrs: any, ...children: any[]) {
-  let tagNamespace = null;
-  let tagName = tag;
+export interface ElementBlueprint {
+  type: "ElementBlueprint";
+  attrs: Record<string, any>;
+  tagName: string;
+  tagNamespace: string | null;
+  children: Blueprint[];
+}
 
-  if (tag.namespace) {
+export interface TextBlueprint {
+  type: "TextBlueprint";
+  value: string;
+}
+
+export type Blueprint = ElementBlueprint | TextBlueprint;
+
+export function mkElement(
+  tag: string | { name: string; namespace: string },
+  attrs: Record<string, any>,
+  ...children: Blueprint[]
+): ElementBlueprint {
+  let tagNamespace, tagName;
+
+  if (typeof tag == "string") {
+    tagName = tag;
+    tagNamespace = null;
+  } else {
     tagName = tag.name;
     tagNamespace = tag.namespace;
   }
 
   return {
-    type: "ElementSetter",
+    type: "ElementBlueprint",
     tagNamespace,
     tagName,
     attrs,
@@ -18,71 +40,78 @@ function mkElement(tag: any, attrs: any, ...children: any[]) {
   };
 }
 
-function build(elementSetter: any): Element {
-  let element: Element;
+export function mkText(value: string): TextBlueprint {
+  return {
+    type: "TextBlueprint",
+    value,
+  };
+}
 
-  if (elementSetter.tagNamespace == null) {
-    element = document.createElement(elementSetter.tagName);
+export function build(blueprint: ElementBlueprint): Element {
+  let element: Element;
+  let onMounted: (e: Element) => void = () => {};
+
+  if (blueprint.tagNamespace == null) {
+    element = document.createElement(blueprint.tagName);
   } else {
     element = document.createElementNS(
-      elementSetter.tagNamespace,
-      elementSetter.tagName,
+      blueprint.tagNamespace,
+      blueprint.tagName,
     );
   }
 
-  const attrs = elementSetter.attrs;
-  Object.keys(attrs).forEach((key) => {
-    const value = attrs[key];
+  Object.keys(blueprint.attrs).forEach((key) => {
+    const value = blueprint.attrs[key];
 
-    if (!value) {
+    if (key == "onCreated") {
+      onMounted = value;
       return;
     }
 
-    if (typeof value === "string") {
-      //@ts-ignore
-      element[key] = value;
-      return;
-    }
-
-    if (value.type == "signal") {
-      const onChange = (v: any) => {
-        //@ts-ignore
-        element[key] = v;
-      };
-      observe(value.state, value.property, onChange, {
-        call: true,
+    if (isSignal(value)) {
+      observe(value, (v) => {
+        if (!isNullOrUndef(v)) {
+          applyPrimitive(key, value, element);
+        } else {
+          //TODO: is it needed? would setting attribute to undefined do the trick itself?
+          element.removeAttribute(key);
+        }
       });
-    }
-  });
-
-  elementSetter.children.forEach((child: any) => {
-    if (!child) {
       return;
     }
 
-    if (child.type == "ElementSetter") {
-      element.appendChild(build(child));
-    } else if (child.type == "signal") {
-      let lastElement: Element | null = null;
+    applyPrimitive(key, value, element);
+  });
 
-      observe(
-        child.state,
-        child.property,
-        (elSetter) => {
-          const el = build(elSetter);
-          if (lastElement !== null) {
-            element.replaceChild(el, lastElement);
-          } else {
-            element.appendChild(el);
-          }
-          lastElement = el;
-        },
-        {
-          call: true,
-        },
-      );
+  blueprint.children.forEach((bp) => {
+    if (bp.type == "ElementBlueprint") {
+      element.appendChild(build(bp));
+      return;
+    }
+
+    if (bp.type == "TextBlueprint") {
+      element.appendChild(document.createTextNode(bp.value));
     }
   });
+
+  onMounted(element);
 
   return element;
+}
+
+function applyPrimitive(key: string, value: any, element: Element) {
+  if (isNullOrUndef(value)) {
+    return;
+  }
+
+  if (typeof value === "string") {
+    //@ts-ignore
+    element[key] = value;
+    return;
+  }
+
+  if (typeof value === "number") {
+    //@ts-ignore
+    element[key] = value.toString();
+  }
 }
