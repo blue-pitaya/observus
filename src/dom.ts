@@ -1,9 +1,9 @@
 import { isNullOrUndef, isSignal } from "./utils";
-import { observe, Signal } from "./core";
+import { observe } from "./core";
 
 export interface ElementBlueprint {
   type: "ElementBlueprint";
-  attrs: Record<string, AttrValue>;
+  attrs: Record<string, any>;
   tagName: string;
   tagNamespace: string | null;
   children: Blueprint[];
@@ -14,21 +14,7 @@ export interface TextBlueprint {
   value: string;
 }
 
-export type AttrValue =
-  | undefined
-  | null
-  | string
-  | number
-  | Signal<string>
-  | ((v: any) => void)
-  | SetAttr;
-
-interface SetAttr {
-  type: "SetAttr";
-  value: AttrValue;
-}
-
-export function setAttr(value: AttrValue): SetAttr {
+export function setAttr(value: any) {
   return {
     type: "SetAttr",
     value,
@@ -39,7 +25,7 @@ export type Blueprint = ElementBlueprint | TextBlueprint;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
-  attrs: Record<string, AttrValue>,
+  attrs: Record<string, any>,
   ...children: Blueprint[]
 ): ElementBlueprint {
   let tagNamespace, tagName;
@@ -87,7 +73,7 @@ export function build(blueprint: ElementBlueprint): Element {
       setAttrStrategy: "property",
     };
 
-    if (isSetAttr(value)) {
+    if (typeof value == "object" && value.type == "SetAttr") {
       options.setAttrStrategy = "setAttribute";
       handleAttr(name, value.value, element, options, (v) => {
         onMounted = v;
@@ -121,30 +107,23 @@ interface SetAttrOptions {
 
 function handleAttr(
   name: string,
-  value: AttrValue,
+  value: any,
   element: Element,
   options: SetAttrOptions,
   setOnMounted: (v: any) => void,
 ) {
   function applyPrimitive(v: any) {
     if (isNullOrUndef(v)) {
+      element.removeAttribute(name);
       return;
-    }
-
-    let finalValue;
-    if (typeof v === "string") {
-      finalValue = v;
-    }
-    if (typeof v === "number") {
-      finalValue = v.toString();
     }
 
     if (options.setAttrStrategy === "property") {
       //@ts-ignore
-      element[name] = finalValue;
+      element[name] = v;
     } else {
       //@ts-ignore
-      element.setAttribute(name, finalValue);
+      element.setAttribute(name, v);
     }
   }
 
@@ -155,12 +134,7 @@ function handleAttr(
 
   if (isSignal(value)) {
     const onChange = (v: string) => {
-      if (!isNullOrUndef(v)) {
-        applyPrimitive(v);
-      } else {
-        //TODO: is it needed? would setting attribute to undefined do the trick itself?
-        element.removeAttribute(name);
-      }
+      applyPrimitive(v);
     };
     observe(value, onChange);
     onChange(value.getValue());
@@ -168,8 +142,4 @@ function handleAttr(
   }
 
   applyPrimitive(value);
-}
-
-function isSetAttr(v: any): v is SetAttr {
-  return typeof v === "object" && v.type == "SetAttr";
 }

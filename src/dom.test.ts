@@ -65,3 +65,30 @@ test("custom attr can be set using setAttribute", () => {
 
   expect(element.outerHTML).toBe('<div foo="bar"></div>');
 });
+
+test("attr is removed is signal value is undefined for set attr strategy", () => {
+  const className = mkState<string | undefined>("bar");
+  const element = build(
+    mkElement("div", {
+      foo: setAttr(className.signal()),
+    }),
+  );
+  className.set(undefined);
+
+  expect(element.outerHTML).toBe("<div></div>");
+});
+
+test("boolean attributes are handled", () => {
+  const element = build(
+    mkElement("input", {
+      type: "text",
+      required: true,
+    }),
+  );
+
+  const expected = document.createElement("input");
+  expected.type = "text";
+  expected.required = true;
+
+  expect(element.outerHTML).toBe(expected.outerHTML);
+});

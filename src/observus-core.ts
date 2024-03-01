@@ -11,32 +11,6 @@ export interface ElementSetter {
   children: ElementSetter[];
 }
 
-export type AttrStringValue =
-  | string
-  | NullOrUndef
-  | Signal<string | NullOrUndef>;
-
-export type AttrNumberValue =
-  | number
-  | NullOrUndef
-  | Signal<number | NullOrUndef>;
-
-export type AttrBoolValue = boolean | Signal<boolean>;
-
-export type AttrSetStrategy = "property" | "setAttrFn";
-
-export interface AttrSetter {
-  kind: "AttrSetter";
-  name: string;
-  value: AttrStringValue;
-  strategy: AttrSetStrategy;
-}
-
-export interface BoolAttrSetter {
-  kind: "BoolAttrSetter";
-  name: string;
-  value: AttrBoolValue;
-}
 
 export interface TextSignalSetter {
   kind: "TextSignalSetter";
@@ -66,29 +40,15 @@ export interface HardElementsSignalSetter {
   value: Signal<Element[]>;
 }
 
-//export interface InContextCallback {
-//  kind: "InContextCallback";
-//  fn: (el: Element) => void;
-//}
-//
-//export interface OnMountedCallback {
-//  kind: "OnMountedCallback";
-//  fn: (el: Element) => void;
-//}
-
 export type Setter =
   | NullOrUndef
   | string
   | ElementSetter
-  | AttrSetter
-  | BoolAttrSetter
   | TextSignalSetter
   | EventListenerSetter
   | ElementSignalSetter
   | ElementsArraySignalSetter
   | HardElementsSignalSetter;
-//  | InContextCallback
-//  | OnMountedCallback;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
@@ -129,53 +89,6 @@ export function mkSvgElement(
   );
 }
 
-export const attr = (
-  name: string,
-  value: AttrStringValue,
-  strategy: AttrSetStrategy = "property",
-): AttrSetter => ({
-  kind: "AttrSetter",
-  name,
-  value,
-  strategy,
-});
-
-export const customAttr = (
-  name: string,
-  value: AttrStringValue,
-): AttrSetter => ({
-  kind: "AttrSetter",
-  name,
-  value,
-  strategy: "setAttrFn",
-});
-
-export function numAttr(
-  name: string,
-  value: AttrNumberValue,
-  strategy: AttrSetStrategy = "property",
-): AttrSetter {
-  let strValue: AttrStringValue;
-
-  if (isNullOrUndef(value)) {
-    strValue = value;
-  } else if (typeof value == "number") {
-    strValue = value.toString();
-  } else {
-    strValue = value.map((v) => (isNullOrUndef(v) ? v : v.toString()));
-  }
-
-  return attr(name, strValue, strategy);
-}
-
-export const boolAttr = (
-  name: string,
-  value: AttrBoolValue,
-): BoolAttrSetter => ({
-  kind: "BoolAttrSetter",
-  name,
-  value,
-});
 
 export const textSignal = (value: Signal<string>): TextSignalSetter => ({
   kind: "TextSignalSetter",
@@ -214,16 +127,6 @@ export const hardElementsSignal = (
   kind: "HardElementsSignalSetter",
   value,
 });
-
-//export const onMounted = (fn: (el: Element) => void): OnMountedCallback => ({
-//  kind: "OnMountedCallback",
-//  fn,
-//});
-//
-//export const inCtx = (fn: (e: Element) => void): InContextCallback => ({
-//  kind: "InContextCallback",
-//  fn,
-//});
 
 export function mount(root: Element, ...setters: Setter[]) {
   setters.forEach((setter) => {
@@ -318,45 +221,6 @@ function handleSetter(root: Element, setter: Setter) {
 
   if (setter.kind == "ElementSetter") {
     root.appendChild(build(setter));
-  }
-
-  if (setter.kind == "AttrSetter") {
-    if (isNullOrUndef(setter.value)) {
-      return;
-    }
-
-    const buildAttr = (value: string) => {
-      if (setter.strategy == "setAttrFn") {
-        root.setAttribute(setter.name, value);
-      } else {
-        // @ts-ignore
-        root[setter.name] = value;
-      }
-    };
-
-    if (typeof setter.value == "string") {
-      buildAttr(setter.value);
-    } else {
-      observe(setter.value, (v) => {
-        if (!isNullOrUndef(v)) {
-          buildAttr(v);
-        } else {
-          root.removeAttribute(setter.name);
-        }
-      });
-    }
-  }
-
-  if (setter.kind == "BoolAttrSetter") {
-    if (typeof setter.value == "boolean") {
-      // @ts-ignore
-      root[setter.name] = setter.value;
-    } else {
-      observe(setter.value, (v) => {
-        // @ts-ignore
-        root[setter.name] = v;
-      });
-    }
   }
 
   if (setter.kind == "TextSignalSetter") {
