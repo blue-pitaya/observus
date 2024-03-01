@@ -9,11 +9,6 @@ export interface ElementBlueprint {
   children: Blueprint[];
 }
 
-export interface TextBlueprint {
-  type: "TextBlueprint";
-  value: string;
-}
-
 export function setAttr(value: any) {
   return {
     type: "SetAttr",
@@ -21,7 +16,7 @@ export function setAttr(value: any) {
   };
 }
 
-export type Blueprint = ElementBlueprint | TextBlueprint;
+export type Blueprint = ElementBlueprint | string;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
@@ -44,13 +39,6 @@ export function mkElement(
     tagName,
     attrs,
     children,
-  };
-}
-
-export function mkText(value: string): TextBlueprint {
-  return {
-    type: "TextBlueprint",
-    value,
   };
 }
 
@@ -85,15 +73,13 @@ export function build(blueprint: ElementBlueprint): Element {
     }
   });
 
-  blueprint.children.forEach((bp) => {
-    if (bp.type == "ElementBlueprint") {
-      element.appendChild(build(bp));
+  blueprint.children.forEach((bp: Blueprint) => {
+    if (typeof bp === "string") {
+      element.appendChild(document.createTextNode(bp));
       return;
     }
 
-    if (bp.type == "TextBlueprint") {
-      element.appendChild(document.createTextNode(bp.value));
-    }
+    element.appendChild(build(bp));
   });
 
   onMounted(element);

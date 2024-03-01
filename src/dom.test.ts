@@ -1,4 +1,4 @@
-import { build, mkElement, mkText, setAttr } from "./dom";
+import { build, mkElement, setAttr } from "./dom";
 import { mkState } from "./core";
 
 test("1", () => {
@@ -8,7 +8,7 @@ test("1", () => {
       {
         className: "foo",
       },
-      mkElement("span", {}, mkText("bar")),
+      mkElement("span", {}, "bar"),
     ),
   );
 
@@ -39,7 +39,7 @@ test("3", () => {
           called = true;
         },
       },
-      mkElement("span", {}, mkText("bar")),
+      mkElement("span", {}, "bar"),
     ),
   );
 
