@@ -23,14 +23,7 @@ export interface Signal<A> {
   map: <B>(f: (v: A) => B) => Signal<B>;
 }
 
-export interface StateProxy<A> {
-  signal: Signal<A>;
-  update: (v: A) => void;
-}
-
 export type FreeFn = () => void;
-
-export type LazyStateSetter = () => Observer[];
 
 const createSignal = <A>(s: State<A>): Signal<A> => ({
   type: "Signal",
@@ -97,13 +90,6 @@ export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
   return unobserveFn;
 }
 
-export const toProxy = <A>(state: State<A>): StateProxy<A> => ({
-  signal: state.signal(),
-  update: (v) => {
-    state.set(v);
-  },
-});
-
 export const combine = <A, B, C>(
   sa: Signal<A>,
   sb: Signal<B>,
@@ -116,35 +102,6 @@ export const combine = <A, B, C>(
     return mapSignal(this, f);
   },
 });
-
-//export function lazySet<A>(state: State<A>, value: A): LazyStateSetter {
-//  return () => {
-//    state.isSet = true;
-//    state.value = value;
-//    return state.observers;
-//  };
-//}
-//
-//export function lazyUpdate<A>(
-//  state: State<A>,
-//  fn: (v: A) => A,
-//): LazyStateSetter {
-//  return () => {
-//    state.isSet = true;
-//    state.value = fn(state.value);
-//    return state.observers;
-//  };
-//}
-
-export function updateMany(...lazyStateSetters: LazyStateSetter[]) {
-  let observersToUpdate: Set<Observer> = new Set();
-  lazyStateSetters.forEach((setter) => {
-    const observers = setter();
-    observers.forEach((v) => observersToUpdate.add(v));
-  });
-
-  observersToUpdate.forEach((o) => o.next());
-}
 
 //TODO: could i use combine function to do this? xd
 //TEST: observe must set value on proxyState immidetly
