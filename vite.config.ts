@@ -9,9 +9,10 @@ export default defineConfig({
     outDir: "lib",
     lib: {
       entry: {
-        "observus-core": resolve(__dirname, "src/observus-core.ts"),
+        "observus-core": resolve(__dirname, "src/core.ts"),
+        "observus-dom": resolve(__dirname, "src/dom.ts"),
         "observus-helpers": resolve(__dirname, "src/observus-helpers.ts"),
-        "observus-tags": resolve(__dirname, "src/observus-tags.ts"),
+        "observus-tags": resolve(__dirname, "src/tags.ts"),
         "observus-attributes": resolve(__dirname, "src/observus-attributes.ts"),
         "observus-svg-tags": resolve(__dirname, "src/observus-svg-tags.ts"),
         "observus-svg-attributes": resolve(

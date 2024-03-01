@@ -1,6 +1,6 @@
 import { observe } from "./core";
 
-export function mkElement(tag: any, attrs: any, ...children: any[]) {
+function mkElement(tag: any, attrs: any, ...children: any[]) {
   let tagNamespace = null;
   let tagName = tag;
 
@@ -18,7 +18,7 @@ export function mkElement(tag: any, attrs: any, ...children: any[]) {
   };
 }
 
-export function build(elementSetter: any): Element {
+function build(elementSetter: any): Element {
   let element: Element;
 
   if (elementSetter.tagNamespace == null) {

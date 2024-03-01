@@ -1,4 +1,7 @@
+import { NullOrUndef, isNullOrUndef, isSignal } from "./utils";
+
 export interface State<A> {
+  type: "State";
   isSet: boolean;
   value: A;
   observers: Observer[];
@@ -9,10 +12,12 @@ export interface State<A> {
 }
 
 export interface Observer {
+  type: "Observer";
   next: () => void;
 }
 
 export interface Signal<A> {
+  type: "Signal";
   sources: State<any>[];
   getValue: () => A;
   map: <B>(f: (v: A) => B) => Signal<B>;
@@ -28,6 +33,7 @@ export type FreeFn = () => void;
 export type LazyStateSetter = () => Observer[];
 
 const createSignal = <A>(s: State<A>): Signal<A> => ({
+  type: "Signal",
   sources: [s],
   getValue: () => s.value,
   map(f) {
@@ -44,6 +50,7 @@ const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
 });
 
 export const mkState = <A>(initialValue: A): State<A> => ({
+  type: "State",
   isSet: true,
   value: initialValue,
   observers: [],
@@ -64,6 +71,7 @@ export const mkState = <A>(initialValue: A): State<A> => ({
 });
 
 export const constSignal = <A>(v: A): Signal<A> => ({
+  type: "Signal",
   sources: [],
   getValue: () => v,
   map(f) {
@@ -74,6 +82,7 @@ export const constSignal = <A>(v: A): Signal<A> => ({
 /* returns "unobserve" function */
 export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
   const observer: Observer = {
+    type: "Observer",
     next: () => next(s.getValue()),
   };
   s.sources.forEach((state) => {
@@ -100,6 +109,7 @@ export const combine = <A, B, C>(
   sb: Signal<B>,
   mapping: (a: A, b: B) => C,
 ): Signal<C> => ({
+  type: "Signal",
   sources: [...sa.sources, ...sb.sources],
   getValue: () => mapping(sa.getValue(), sb.getValue()),
   map(f) {
@@ -107,24 +117,24 @@ export const combine = <A, B, C>(
   },
 });
 
-export function lazySet<A>(state: State<A>, value: A): LazyStateSetter {
-  return () => {
-    state.isSet = true;
-    state.value = value;
-    return state.observers;
-  };
-}
-
-export function lazyUpdate<A>(
-  state: State<A>,
-  fn: (v: A) => A,
-): LazyStateSetter {
-  return () => {
-    state.isSet = true;
-    state.value = fn(state.value);
-    return state.observers;
-  };
-}
+//export function lazySet<A>(state: State<A>, value: A): LazyStateSetter {
+//  return () => {
+//    state.isSet = true;
+//    state.value = value;
+//    return state.observers;
+//  };
+//}
+//
+//export function lazyUpdate<A>(
+//  state: State<A>,
+//  fn: (v: A) => A,
+//): LazyStateSetter {
+//  return () => {
+//    state.isSet = true;
+//    state.value = fn(state.value);
+//    return state.observers;
+//  };
+//}
 
 export function updateMany(...lazyStateSetters: LazyStateSetter[]) {
   let observersToUpdate: Set<Observer> = new Set();
@@ -159,14 +169,12 @@ export function flatten<A>(
 
 // DOM building
 
-export type NullOrUndef = null | undefined;
-
 export interface ElementSetter {
   kind: "ElementSetter";
+  attrs: Record<string, any>;
   tagName: string;
   tagNamespace: string | null;
-  children: Setter[];
-  extend: (...ch: Setter[]) => ElementSetter;
+  children: ElementSetter[];
 }
 
 export type AttrStringValue =
@@ -224,15 +232,15 @@ export interface HardElementsSignalSetter {
   value: Signal<Element[]>;
 }
 
-export interface InContextCallback {
-  kind: "InContextCallback";
-  fn: (el: Element) => void;
-}
-
-export interface OnMountedCallback {
-  kind: "OnMountedCallback";
-  fn: (el: Element) => void;
-}
+//export interface InContextCallback {
+//  kind: "InContextCallback";
+//  fn: (el: Element) => void;
+//}
+//
+//export interface OnMountedCallback {
+//  kind: "OnMountedCallback";
+//  fn: (el: Element) => void;
+//}
 
 export type Setter =
   | NullOrUndef
@@ -244,37 +252,48 @@ export type Setter =
   | EventListenerSetter
   | ElementSignalSetter
   | ElementsArraySignalSetter
-  | HardElementsSignalSetter
-  | InContextCallback
-  | OnMountedCallback;
+  | HardElementsSignalSetter;
+//  | InContextCallback
+//  | OnMountedCallback;
 
-const isNullOrUndef = (v: any): v is NullOrUndef =>
-  v === undefined || v === null;
-
-function createTag(
-  name: string,
-  isSvg: boolean,
-  ...ch: Setter[]
+export function mkElement(
+  tag: string | { name: string; namespace: string },
+  attrs: Record<string, any>,
+  ...children: ElementSetter[]
 ): ElementSetter {
-  const setter: ElementSetter = {
-    kind: "ElementSetter",
-    tagName: name,
-    tagNamespace: isSvg ? "http://www.w3.org/2000/svg" : null,
-    children: ch,
-    extend: (...ch: Setter[]) => {
-      setter.children.push(...ch);
-      return setter;
-    },
-  };
+  let tagNamespace, tagName;
 
-  return setter;
+  if (typeof tag == "string") {
+    tagName = tag;
+    tagNamespace = null;
+  } else {
+    tagName = tag.name;
+    tagNamespace = tag.namespace;
+  }
+
+  return {
+    kind: "ElementSetter",
+    tagNamespace,
+    tagName,
+    attrs,
+    children,
+  };
 }
 
-export const tag = <A>(name: string, ...ch: Setter[]): ElementSetter =>
-  createTag(name, false, ...ch);
-
-export const svgTag = <A>(name: string, ...ch: Setter[]): ElementSetter =>
-  createTag(name, true, ...ch);
+export function mkSvgElement(
+  tag: string,
+  attrs: Record<string, any>,
+  ...children: ElementSetter[]
+): ElementSetter {
+  return mkElement(
+    {
+      name: tag,
+      namespace: "http://www.w3.org/2000/svg",
+    },
+    attrs,
+    ...children,
+  );
+}
 
 export const attr = (
   name: string,
@@ -362,15 +381,15 @@ export const hardElementsSignal = (
   value,
 });
 
-export const onMounted = (fn: (el: Element) => void): OnMountedCallback => ({
-  kind: "OnMountedCallback",
-  fn,
-});
-
-export const inCtx = (fn: (e: Element) => void): InContextCallback => ({
-  kind: "InContextCallback",
-  fn,
-});
+//export const onMounted = (fn: (el: Element) => void): OnMountedCallback => ({
+//  kind: "OnMountedCallback",
+//  fn,
+//});
+//
+//export const inCtx = (fn: (e: Element) => void): InContextCallback => ({
+//  kind: "InContextCallback",
+//  fn,
+//});
 
 export function mount(root: Element, ...setters: Setter[]) {
   setters.forEach((setter) => {
@@ -390,23 +409,65 @@ export function build(elementSetter: ElementSetter): Element {
     );
   }
 
-  let onMounted: OnMountedCallback | undefined;
+  let onMounted: (e: Element) => void = () => {};
 
-  elementSetter.children.forEach((setter) => {
-    if (
-      !isNullOrUndef(setter) &&
-      typeof setter !== "string" &&
-      setter.kind == "OnMountedCallback"
-    ) {
-      onMounted = setter;
+  function applyPrimitive(key: string, value: any) {
+    if (isNullOrUndef(value)) {
+      return;
+    }
+
+    if (typeof value === "string") {
+      //@ts-ignore
+      element[key] = value;
+      return;
+    }
+
+    if (typeof value === "number") {
+      //@ts-ignore
+      element[key] = value.toString();
+    }
+  }
+
+  Object.keys(elementSetter.attrs).forEach((key) => {
+    const value = elementSetter.attrs[key];
+
+    if (key.startsWith("_on_")) {
+      const eventName = key.substring(4);
+
+      if (eventName == "mounted") {
+        onMounted = value;
+      } else {
+        //TODO: handle event listeners
+      }
     } else {
-      handleSetter(element, setter);
+      if (isSignal(value)) {
+        observe(value, (v) => {
+          if (!isNullOrUndef(v)) {
+            applyPrimitive(key, value);
+          } else {
+            //TODO: is it needed? would setting attribute to undefined do the trick itself?
+            element.removeAttribute(key);
+          }
+        });
+      } else {
+        applyPrimitive(key, value);
+      }
     }
   });
 
-  if (onMounted !== undefined) {
-    onMounted.fn(element);
-  }
+  //elementSetter.children.forEach((setter) => {
+  //  if (
+  //    !isNullOrUndef(setter) &&
+  //    typeof setter !== "string" &&
+  //    setter.kind == "OnMountedCallback"
+  //  ) {
+  //    onMounted = setter;
+  //  } else {
+  //    handleSetter(element, setter);
+  //  }
+  //});
+
+  onMounted(element);
 
   return element;
 }
@@ -528,9 +589,5 @@ function handleSetter(root: Element, setter: Setter) {
 
       lastElements = elements;
     });
-  }
-
-  if (setter.kind == "InContextCallback") {
-    setter.fn(root);
   }
 }

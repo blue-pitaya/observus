@@ -17,14 +17,19 @@
   "files": [
     "lib"
   ],
-  "module": "./lib/observus-core.js",
-  "main": "./lib/observus-core.cjs",
-  "types": "./lib/observus-core.d.ts",
+  "module": "./lib/core.js",
+  "main": "./lib/core.cjs",
+  "types": "./lib/core.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/observus-core.js",
-      "require": "./lib/observus-core.cjs",
-      "types": "./lib/observus-core.d.ts"
+      "import": "./lib/core.js",
+      "require": "./lib/core.cjs",
+      "types": "./lib/core.d.ts"
+    },
+    "./dom": {
+      "import": "./lib/dom.js",
+      "require": "./lib/dom.cjs",
+      "types": "./lib/dom.d.ts"
     },
     "./helpers": {
       "import": "./lib/observus-helpers.js",
@@ -32,9 +37,9 @@
       "types": "./lib/observus-helpers.d.ts"
     },
     "./tags": {
-      "import": "./lib/observus-tags.js",
-      "require": "./lib/observus-tags.cjs",
-      "types": "./lib/observus-tags.d.ts"
+      "import": "./lib/tags.js",
+      "require": "./lib/tags.cjs",
+      "types": "./lib/tags.d.ts"
     },
     "./attributes": {
       "import": "./lib/observus-attributes.js",
