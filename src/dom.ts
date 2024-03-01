@@ -1,9 +1,9 @@
 import { isNullOrUndef, isSignal } from "./utils";
-import { observe } from "./core";
+import { observe, Signal } from "./core";
 
 export interface ElementBlueprint {
   type: "ElementBlueprint";
-  attrs: Record<string, any>;
+  attrs: Record<string, AttrValue>;
   tagName: string;
   tagNamespace: string | null;
   children: Blueprint[];
@@ -14,11 +14,32 @@ export interface TextBlueprint {
   value: string;
 }
 
+export type AttrValue =
+  | undefined
+  | null
+  | string
+  | number
+  | Signal<string>
+  | ((v: any) => void)
+  | SetAttr;
+
+interface SetAttr {
+  type: "SetAttr";
+  value: AttrValue;
+}
+
+export function setAttr(value: AttrValue): SetAttr {
+  return {
+    type: "SetAttr",
+    value,
+  };
+}
+
 export type Blueprint = ElementBlueprint | TextBlueprint;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
-  attrs: Record<string, any>,
+  attrs: Record<string, AttrValue>,
   ...children: Blueprint[]
 ): ElementBlueprint {
   let tagNamespace, tagName;
@@ -60,27 +81,22 @@ export function build(blueprint: ElementBlueprint): Element {
     );
   }
 
-  Object.keys(blueprint.attrs).forEach((key) => {
-    const value = blueprint.attrs[key];
+  Object.keys(blueprint.attrs).forEach((name) => {
+    const value = blueprint.attrs[name];
+    const options: SetAttrOptions = {
+      setAttrStrategy: "property",
+    };
 
-    if (key == "onCreated") {
-      onMounted = value;
-      return;
-    }
-
-    if (isSignal(value)) {
-      observe(value, (v) => {
-        if (!isNullOrUndef(v)) {
-          applyPrimitive(key, value, element);
-        } else {
-          //TODO: is it needed? would setting attribute to undefined do the trick itself?
-          element.removeAttribute(key);
-        }
+    if (isSetAttr(value)) {
+      options.setAttrStrategy = "setAttribute";
+      handleAttr(name, value.value, element, options, (v) => {
+        onMounted = v;
       });
-      return;
+    } else {
+      handleAttr(name, value, element, options, (v) => {
+        onMounted = v;
+      });
     }
-
-    applyPrimitive(key, value, element);
   });
 
   blueprint.children.forEach((bp) => {
@@ -99,19 +115,61 @@ export function build(blueprint: ElementBlueprint): Element {
   return element;
 }
 
-function applyPrimitive(key: string, value: any, element: Element) {
-  if (isNullOrUndef(value)) {
+interface SetAttrOptions {
+  setAttrStrategy: "property" | "setAttribute";
+}
+
+function handleAttr(
+  name: string,
+  value: AttrValue,
+  element: Element,
+  options: SetAttrOptions,
+  setOnMounted: (v: any) => void,
+) {
+  function applyPrimitive(v: any) {
+    if (isNullOrUndef(v)) {
+      return;
+    }
+
+    let finalValue;
+    if (typeof v === "string") {
+      finalValue = v;
+    }
+    if (typeof v === "number") {
+      finalValue = v.toString();
+    }
+
+    if (options.setAttrStrategy === "property") {
+      //@ts-ignore
+      element[name] = finalValue;
+    } else {
+      //@ts-ignore
+      element.setAttribute(name, finalValue);
+    }
+  }
+
+  if (name == "onCreated") {
+    setOnMounted(value);
     return;
   }
 
-  if (typeof value === "string") {
-    //@ts-ignore
-    element[key] = value;
+  if (isSignal(value)) {
+    const onChange = (v: string) => {
+      if (!isNullOrUndef(v)) {
+        applyPrimitive(v);
+      } else {
+        //TODO: is it needed? would setting attribute to undefined do the trick itself?
+        element.removeAttribute(name);
+      }
+    };
+    observe(value, onChange);
+    onChange(value.getValue());
     return;
   }
 
-  if (typeof value === "number") {
-    //@ts-ignore
-    element[key] = value.toString();
-  }
+  applyPrimitive(value);
+}
+
+function isSetAttr(v: any): v is SetAttr {
+  return typeof v === "object" && v.type == "SetAttr";
 }

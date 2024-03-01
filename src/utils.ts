@@ -1,4 +1,4 @@
-import { Signal } from "./observus-core";
+import { Signal } from "./core";
 
 export type NullOrUndef = null | undefined;
 
