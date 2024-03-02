@@ -114,3 +114,57 @@ test("element signal works", () => {
   state.set(false);
   expect(element.outerHTML).toBe("<div><span>bar</span></div>");
 });
+
+test("elements array signal works", () => {
+  const state = mkState(true);
+  const signal = state.map((v) => {
+    return v
+      ? [mkElement("p", {}, "foo"), mkElement("span", {}, "bar")]
+      : [mkElement("div", {}, "baz")];
+  });
+
+  const element = build(
+    mkElement(
+      "div",
+      {},
+      mkElement("p", {}, "prev"),
+      signal,
+      mkElement("p", {}, "next"),
+    ),
+  );
+  expect(element.outerHTML).toBe(
+    "<div><p>prev</p><p>foo</p><span>bar</span><p>next</p></div>",
+  );
+
+  state.set(false);
+  expect(element.outerHTML).toBe(
+    "<div><p>prev</p><div>baz</div><p>next</p></div>",
+  );
+});
+
+test("elements array signal with strings works", () => {
+  const state = mkState(true);
+  const signal = state.map((v) => {
+    return v
+      ? [mkElement("p", {}, "foo"), "bar"]
+      : [mkElement("div", {}, "baz")];
+  });
+
+  const element = build(
+    mkElement(
+      "div",
+      {},
+      mkElement("p", {}, "prev"),
+      signal,
+      mkElement("p", {}, "next"),
+    ),
+  );
+  expect(element.outerHTML).toBe(
+    "<div><p>prev</p><p>foo</p>bar<p>next</p></div>",
+  );
+
+  state.set(false);
+  expect(element.outerHTML).toBe(
+    "<div><p>prev</p><div>baz</div><p>next</p></div>",
+  );
+});

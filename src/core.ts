@@ -88,6 +88,13 @@ export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
   return unobserveFn;
 }
 
+export function runAndObserve<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
+  const unobserve = observe(s, next);
+  next(s.getValue());
+
+  return unobserve;
+}
+
 export const combine = <A, B, C>(
   sa: Signal<A>,
   sb: Signal<B>,
@@ -121,4 +128,3 @@ export function flatten<A>(
 
   return [proxyState.signal() as Signal<A>, totalFree];
 }
-

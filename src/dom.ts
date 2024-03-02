@@ -1,5 +1,5 @@
 import { isNullOrUndef, isSignal } from "./utils";
-import { Signal, observe } from "./core";
+import { Signal, runAndObserve } from "./core";
 
 export interface ElementBlueprint {
   type: "ElementBlueprint";
@@ -16,9 +16,9 @@ export function setAttr(value: any) {
   };
 }
 
-type B = ElementBlueprint | string;
+type BB = ElementBlueprint | string;
 
-export type Blueprint = B | Signal<B>;
+export type Blueprint = ElementBlueprint | string | Signal<BB> | Signal<BB[]>;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
@@ -44,7 +44,26 @@ export function mkElement(
   };
 }
 
-export function build(blueprint: ElementBlueprint): Element {
+export function mkSvgElement(
+  tag: string,
+  attrs: Record<string, any>,
+  ...children: Blueprint[]
+): ElementBlueprint {
+  return mkElement(
+    {
+      name: tag,
+      namespace: "http://www.w3.org/2000/svg",
+    },
+    attrs,
+    ...children,
+  );
+}
+
+export function build(blueprint: BB): any {
+  if (typeof blueprint == "string") {
+    return document.createTextNode(blueprint);
+  }
+
   let element: Element;
   let onMounted: (e: Element) => void = () => {};
 
@@ -76,35 +95,56 @@ export function build(blueprint: ElementBlueprint): Element {
   });
 
   blueprint.children.forEach((bp: Blueprint) => {
-    if (typeof bp == "string") {
-      element.appendChild(document.createTextNode(bp));
-      return;
-    }
-
     if (typeof bp == "object" && bp.type == "Signal") {
       const signalValue = bp.getValue();
 
       if (typeof signalValue == "string") {
         const textNode = document.createTextNode(signalValue);
-        observe(bp, (v) => {
+        runAndObserve(bp as Signal<string>, (v) => {
           textNode.nodeValue = v as string;
         });
         element.appendChild(textNode);
-      } else {
-        let lastElement: Element | null = null;
-        const onChange = (elSetter: any) => {
-          const el = build(elSetter as ElementBlueprint);
-          if (lastElement !== null) {
-            element.replaceChild(el, lastElement);
+        return;
+      }
+
+      if (Array.isArray(signalValue)) {
+        let lastElements: Element[] | null = null;
+        const elementsStartIndex = element.childNodes.length;
+
+        runAndObserve(bp as Signal<BB[]>, (elementSetters) => {
+          const elements = elementSetters.map((e) => build(e));
+
+          if (lastElements !== null) {
+            const childNodes = [...element.childNodes];
+            childNodes.splice(
+              elementsStartIndex,
+              lastElements.length,
+              ...elements,
+            );
+            element.replaceChildren(...childNodes);
           } else {
-            element.appendChild(el);
+            elements.forEach((el) => {
+              element.appendChild(el);
+            });
           }
 
-          lastElement = el;
-        };
-        observe(bp, onChange);
-        onChange(signalValue);
+          lastElements = elements;
+        });
+
+        return;
       }
+
+      let lastElement: Element | null = null;
+      runAndObserve(bp, (elSetter: any) => {
+        const el = build(elSetter as ElementBlueprint);
+        if (lastElement !== null) {
+          element.replaceChild(el, lastElement);
+        } else {
+          element.appendChild(el);
+        }
+
+        lastElement = el;
+      });
 
       return;
     }
@@ -149,11 +189,9 @@ function handleAttr(
   }
 
   if (isSignal(value)) {
-    const onChange = (v: string) => {
+    runAndObserve(value, (v: string) => {
       applyPrimitive(v);
-    };
-    observe(value, onChange);
-    onChange(value.getValue());
+    });
     return;
   }
 

@@ -11,23 +11,12 @@ export interface ElementSetter {
   children: ElementSetter[];
 }
 
-
-export interface TextSignalSetter {
-  kind: "TextSignalSetter";
-  value: Signal<string>;
-}
-
 //TODO: proper types from ts
 export interface EventListenerSetter {
   kind: "EventListenerSetter";
   type: string;
   listener: <A extends Event>(e: A) => void;
   options?: boolean | AddEventListenerOptions;
-}
-
-export interface ElementSignalSetter {
-  kind: "ElementSignalSetter";
-  value: Signal<ElementSetter>;
 }
 
 export interface ElementsArraySignalSetter {
@@ -44,56 +33,9 @@ export type Setter =
   | NullOrUndef
   | string
   | ElementSetter
-  | TextSignalSetter
   | EventListenerSetter
-  | ElementSignalSetter
   | ElementsArraySignalSetter
   | HardElementsSignalSetter;
-
-export function mkElement(
-  tag: string | { name: string; namespace: string },
-  attrs: Record<string, any>,
-  ...children: ElementSetter[]
-): ElementSetter {
-  let tagNamespace, tagName;
-
-  if (typeof tag == "string") {
-    tagName = tag;
-    tagNamespace = null;
-  } else {
-    tagName = tag.name;
-    tagNamespace = tag.namespace;
-  }
-
-  return {
-    kind: "ElementSetter",
-    tagNamespace,
-    tagName,
-    attrs,
-    children,
-  };
-}
-
-export function mkSvgElement(
-  tag: string,
-  attrs: Record<string, any>,
-  ...children: ElementSetter[]
-): ElementSetter {
-  return mkElement(
-    {
-      name: tag,
-      namespace: "http://www.w3.org/2000/svg",
-    },
-    attrs,
-    ...children,
-  );
-}
-
-
-export const textSignal = (value: Signal<string>): TextSignalSetter => ({
-  kind: "TextSignalSetter",
-  value,
-});
 
 //TODO: proper types from ts
 export const on = (
@@ -105,13 +47,6 @@ export const on = (
   type,
   listener,
   options,
-});
-
-export const elementSignal = (
-  value: Signal<ElementSetter>,
-): ElementSignalSetter => ({
-  kind: "ElementSignalSetter",
-  value,
 });
 
 export const elementsArraySignal = (
@@ -223,30 +158,8 @@ function handleSetter(root: Element, setter: Setter) {
     root.appendChild(build(setter));
   }
 
-  if (setter.kind == "TextSignalSetter") {
-    const textNode = document.createTextNode(setter.value.getValue());
-    observe(setter.value, (v) => {
-      textNode.nodeValue = v;
-    });
-    root.appendChild(textNode);
-  }
-
   if (setter.kind == "EventListenerSetter") {
     root.addEventListener(setter.type, setter.listener, setter.options);
-  }
-
-  if (setter.kind == "ElementSignalSetter") {
-    let lastElement: Element | null = null;
-    observe(setter.value, (elSetter) => {
-      const el = build(elSetter);
-      if (lastElement !== null) {
-        root.replaceChild(el, lastElement);
-      } else {
-        root.appendChild(el);
-      }
-
-      lastElement = el;
-    });
   }
 
   if (setter.kind == "ElementsArraySignalSetter") {
