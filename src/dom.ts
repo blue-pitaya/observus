@@ -198,8 +198,15 @@ function handleAttr(
     }
   }
 
-  if (name == "onCreated") {
-    setOnMounted(value);
+  if (name.startsWith("on_")) {
+    const eventName = name.substring(3);
+
+    if (eventName == "created") {
+      setOnMounted(value);
+    } else {
+      element.addEventListener(eventName, value);
+    }
+
     return;
   }
 

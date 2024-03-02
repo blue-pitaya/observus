@@ -1,4 +1,4 @@
-import { build, mkElement, setAttr } from "./dom";
+import { build, mkElement, mkSvgElement, setAttr } from "./dom";
 import { mkState } from "./core";
 
 test("1", () => {
@@ -35,7 +35,7 @@ test("3", () => {
       "div",
       {
         className: "foo",
-        onCreated: () => {
+        on_created: () => {
           called = true;
         },
       },
@@ -195,4 +195,18 @@ test("built elements array signal works", () => {
   expect(element.outerHTML).toBe(
     "<div><p>prev</p><div>baz</div><p>next</p></div>",
   );
+});
+
+test("setting event listener works", () => {
+  let called = false;
+  const element = build(
+    mkElement("div", {
+      on_click: () => {
+        called = true;
+      },
+    }),
+  );
+  element.click();
+
+  expect(called).toBe(true);
 });
