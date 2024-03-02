@@ -88,25 +88,19 @@ export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
   return unobserveFn;
 }
 
-export function runAndObserve<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
-  const unobserve = observe(s, next);
-  next(s.getValue());
-
-  return unobserve;
+export function combine<A>(
+  signals: Signal<any>[],
+  mapping: (v: any[]) => A,
+): Signal<A> {
+  return {
+    type: "Signal",
+    sources: signals.flatMap((s) => s.sources),
+    getValue: () => mapping(signals.map((s) => s.getValue())),
+    map(f) {
+      return mapSignal(this, f);
+    },
+  };
 }
-
-export const combine = <A, B, C>(
-  sa: Signal<A>,
-  sb: Signal<B>,
-  mapping: (a: A, b: B) => C,
-): Signal<C> => ({
-  type: "Signal",
-  sources: [...sa.sources, ...sb.sources],
-  getValue: () => mapping(sa.getValue(), sb.getValue()),
-  map(f) {
-    return mapSignal(this, f);
-  },
-});
 
 //TODO: could i use combine function to do this? xd
 //TEST: observe must set value on proxyState immidetly

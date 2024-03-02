@@ -1,5 +1,3 @@
-import { mkElement } from "./observus-core";
-
 //test("null or undefined setters are ignored", () => {
 //  const element = build(div("one", null, "two", undefined, "three"));
 //

@@ -1,5 +1,6 @@
 import { isNullOrUndef, isSignal } from "./utils";
-import { Signal, runAndObserve } from "./core";
+import { Signal } from "./core";
+import { runAndObserve } from "./helpers";
 
 export interface ElementBlueprint {
   type: "ElementBlueprint";
