@@ -92,3 +92,25 @@ test("boolean attributes are handled", () => {
 
   expect(element.outerHTML).toBe(expected.outerHTML);
 });
+
+test("text signal as element blueprint works", () => {
+  const text = mkState("foo");
+  const element = build(mkElement("div", {}, text.signal()));
+
+  text.set("bar");
+
+  expect(element.outerHTML).toBe("<div>bar</div>");
+});
+
+test("element signal works", () => {
+  const state = mkState(true);
+  const signal = state.map((v) => {
+    return v ? mkElement("p", {}, "foo") : mkElement("span", {}, "bar");
+  });
+
+  const element = build(mkElement("div", {}, signal));
+  expect(element.outerHTML).toBe("<div><p>foo</p></div>");
+
+  state.set(false);
+  expect(element.outerHTML).toBe("<div><span>bar</span></div>");
+});

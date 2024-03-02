@@ -1,5 +1,5 @@
 import { isNullOrUndef, isSignal } from "./utils";
-import { observe } from "./core";
+import { Signal, observe } from "./core";
 
 export interface ElementBlueprint {
   type: "ElementBlueprint";
@@ -16,7 +16,9 @@ export function setAttr(value: any) {
   };
 }
 
-export type Blueprint = ElementBlueprint | string;
+type B = ElementBlueprint | string;
+
+export type Blueprint = B | Signal<B>;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
@@ -74,8 +76,36 @@ export function build(blueprint: ElementBlueprint): Element {
   });
 
   blueprint.children.forEach((bp: Blueprint) => {
-    if (typeof bp === "string") {
+    if (typeof bp == "string") {
       element.appendChild(document.createTextNode(bp));
+      return;
+    }
+
+    if (typeof bp == "object" && bp.type == "Signal") {
+      const signalValue = bp.getValue();
+
+      if (typeof signalValue == "string") {
+        const textNode = document.createTextNode(signalValue);
+        observe(bp, (v) => {
+          textNode.nodeValue = v as string;
+        });
+        element.appendChild(textNode);
+      } else {
+        let lastElement: Element | null = null;
+        const onChange = (elSetter: any) => {
+          const el = build(elSetter as ElementBlueprint);
+          if (lastElement !== null) {
+            element.replaceChild(el, lastElement);
+          } else {
+            element.appendChild(el);
+          }
+
+          lastElement = el;
+        };
+        observe(bp, onChange);
+        onChange(signalValue);
+      }
+
       return;
     }
 
