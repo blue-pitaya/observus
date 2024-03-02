@@ -168,3 +168,31 @@ test("elements array signal with strings works", () => {
     "<div><p>prev</p><div>baz</div><p>next</p></div>",
   );
 });
+
+test("built elements array signal works", () => {
+  const state = mkState(true);
+  const readyElement = build(mkElement("div", {}, "1"));
+  const signal = state.map((v) => {
+    return v
+      ? [readyElement, mkElement("p", {}, "foo"), "bar"]
+      : [mkElement("div", {}, "baz")];
+  });
+
+  const element = build(
+    mkElement(
+      "div",
+      {},
+      mkElement("p", {}, "prev"),
+      signal,
+      mkElement("p", {}, "next"),
+    ),
+  );
+  expect(element.outerHTML).toBe(
+    "<div><p>prev</p><div>1</div><p>foo</p>bar<p>next</p></div>",
+  );
+
+  state.set(false);
+  expect(element.outerHTML).toBe(
+    "<div><p>prev</p><div>baz</div><p>next</p></div>",
+  );
+});

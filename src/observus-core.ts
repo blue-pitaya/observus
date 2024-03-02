@@ -19,10 +19,10 @@ export interface EventListenerSetter {
   options?: boolean | AddEventListenerOptions;
 }
 
-export interface ElementsArraySignalSetter {
-  kind: "ElementsArraySignalSetter";
-  value: Signal<ElementSetter[]>;
-}
+//export interface ElementsArraySignalSetter {
+//  kind: "ElementsArraySignalSetter";
+//  value: Signal<ElementSetter[]>;
+//}
 
 export interface HardElementsSignalSetter {
   kind: "HardElementsSignalSetter";
@@ -34,7 +34,6 @@ export type Setter =
   | string
   | ElementSetter
   | EventListenerSetter
-  | ElementsArraySignalSetter
   | HardElementsSignalSetter;
 
 //TODO: proper types from ts
@@ -47,13 +46,6 @@ export const on = (
   type,
   listener,
   options,
-});
-
-export const elementsArraySignal = (
-  value: Signal<ElementSetter[]>,
-): ElementsArraySignalSetter => ({
-  kind: "ElementsArraySignalSetter",
-  value,
 });
 
 export const hardElementsSignal = (
@@ -160,27 +152,6 @@ function handleSetter(root: Element, setter: Setter) {
 
   if (setter.kind == "EventListenerSetter") {
     root.addEventListener(setter.type, setter.listener, setter.options);
-  }
-
-  if (setter.kind == "ElementsArraySignalSetter") {
-    let lastElements: Element[] | null = null;
-    const elementsStartIndex = root.childNodes.length;
-
-    observe(setter.value, (elementSetters) => {
-      const elements = elementSetters.map((e) => build(e));
-
-      if (lastElements !== null) {
-        const childNodes = [...root.childNodes];
-        childNodes.splice(elementsStartIndex, lastElements.length, ...elements);
-        root.replaceChildren(...childNodes);
-      } else {
-        elements.forEach((el) => {
-          root.appendChild(el);
-        });
-      }
-
-      lastElements = elements;
-    });
   }
 
   if (setter.kind == "HardElementsSignalSetter") {

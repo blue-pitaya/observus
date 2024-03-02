@@ -18,7 +18,19 @@ export function setAttr(value: any) {
 
 type BB = ElementBlueprint | string;
 
-export type Blueprint = ElementBlueprint | string | Signal<BB> | Signal<BB[]>;
+function isBB(e: any): e is BB {
+  return (
+    typeof e == "string" ||
+    (typeof e == "object" && e.type == "ElementBlueprint")
+  );
+}
+
+export type Blueprint =
+  | ElementBlueprint
+  | string
+  | Signal<BB>
+  | Signal<BB[]>
+  | Signal<Element[]>;
 
 export function mkElement(
   tag: string | { name: string; namespace: string },
@@ -111,8 +123,10 @@ export function build(blueprint: BB): any {
         let lastElements: Element[] | null = null;
         const elementsStartIndex = element.childNodes.length;
 
-        runAndObserve(bp as Signal<BB[]>, (elementSetters) => {
-          const elements = elementSetters.map((e) => build(e));
+        runAndObserve(bp as Signal<BB[] | Element[]>, (elementSetters) => {
+          const elements = elementSetters.map((e) => {
+            return isBB(e) ? build(e) : e;
+          });
 
           if (lastElements !== null) {
             const childNodes = [...element.childNodes];
