@@ -16,7 +16,7 @@ export function setAttr(value: any) {
   };
 }
 
-type BB = ElementBlueprint | string;
+export type BB = ElementBlueprint | string;
 
 function isBB(e: any): e is BB {
   return (
@@ -32,6 +32,7 @@ export type Blueprint =
   | Signal<BB[]>
   | Signal<Element[]>;
 
+//TODO: add on_mounted typings
 export function mkElement(
   tag: string | { name: string; namespace: string },
   attrs: Record<string, any>,

@@ -1,69 +1,114 @@
-import { Setter, svgTag } from "./observus-core";
+import { BB, mkSvgElement } from "./dom";
 
 //List generated from scraped data from MDN
 
-type C = Setter[];
+type A = Record<string, any>;
+type C = BB[];
 
-export const a = (...c: C) => svgTag<SVGAElement>("a", ...c);
-export const animate = (...c: C) => svgTag<SVGAnimateElement>("animate", ...c);
-export const animateMotion = (...c: C) => svgTag<SVGAnimateMotionElement>("animateMotion", ...c);
-export const animateTransform = (...c: C) => svgTag<SVGAnimateTransformElement>("animateTransform", ...c);
-export const circle = (...c: C) => svgTag<SVGCircleElement>("circle", ...c);
-export const clipPath = (...c: C) => svgTag<SVGClipPathElement>("clipPath", ...c);
-export const defs = (...c: C) => svgTag<SVGDefsElement>("defs", ...c);
-export const desc = (...c: C) => svgTag<SVGDescElement>("desc", ...c);
-export const ellipse = (...c: C) => svgTag<SVGEllipseElement>("ellipse", ...c);
-export const feBlend = (...c: C) => svgTag<SVGFEBlendElement>("feBlend", ...c);
-export const feColorMatrix = (...c: C) => svgTag<SVGFEColorMatrixElement>("feColorMatrix", ...c);
-export const feComponentTransfer = (...c: C) => svgTag<SVGFEComponentTransferElement>("feComponentTransfer", ...c);
-export const feComposite = (...c: C) => svgTag<SVGFECompositeElement>("feComposite", ...c);
-export const feConvolveMatrix = (...c: C) => svgTag<SVGFEConvolveMatrixElement>("feConvolveMatrix", ...c);
-export const feDiffuseLighting = (...c: C) => svgTag<SVGFEDiffuseLightingElement>("feDiffuseLighting", ...c);
-export const feDisplacementMap = (...c: C) => svgTag<SVGFEDisplacementMapElement>("feDisplacementMap", ...c);
-export const feDistantLight = (...c: C) => svgTag<SVGFEDistantLightElement>("feDistantLight", ...c);
-export const feDropShadow = (...c: C) => svgTag<SVGFEDropShadowElement>("feDropShadow", ...c);
-export const feFlood = (...c: C) => svgTag<SVGFEFloodElement>("feFlood", ...c);
-export const feFuncA = (...c: C) => svgTag<SVGFEFuncAElement>("feFuncA", ...c);
-export const feFuncB = (...c: C) => svgTag<SVGFEFuncBElement>("feFuncB", ...c);
-export const feFuncG = (...c: C) => svgTag<SVGFEFuncGElement>("feFuncG", ...c);
-export const feFuncR = (...c: C) => svgTag<SVGFEFuncRElement>("feFuncR", ...c);
-export const feGaussianBlur = (...c: C) => svgTag<SVGFEGaussianBlurElement>("feGaussianBlur", ...c);
-export const feImage = (...c: C) => svgTag<SVGFEImageElement>("feImage", ...c);
-export const feMerge = (...c: C) => svgTag<SVGFEMergeElement>("feMerge", ...c);
-export const feMergeNode = (...c: C) => svgTag<SVGFEMergeNodeElement>("feMergeNode", ...c);
-export const feMorphology = (...c: C) => svgTag<SVGFEMorphologyElement>("feMorphology", ...c);
-export const feOffset = (...c: C) => svgTag<SVGFEOffsetElement>("feOffset", ...c);
-export const fePointLight = (...c: C) => svgTag<SVGFEPointLightElement>("fePointLight", ...c);
-export const feSpecularLighting = (...c: C) => svgTag<SVGFESpecularLightingElement>("feSpecularLighting", ...c);
-export const feSpotLight = (...c: C) => svgTag<SVGFESpotLightElement>("feSpotLight", ...c);
-export const feTile = (...c: C) => svgTag<SVGFETileElement>("feTile", ...c);
-export const feTurbulence = (...c: C) => svgTag<SVGFETurbulenceElement>("feTurbulence", ...c);
-export const filter = (...c: C) => svgTag<SVGFilterElement>("filter", ...c);
-export const foreignObject = (...c: C) => svgTag<SVGForeignObjectElement>("foreignObject", ...c);
-export const g = (...c: C) => svgTag<SVGGElement>("g", ...c);
-export const image = (...c: C) => svgTag<SVGImageElement>("image", ...c);
-export const line = (...c: C) => svgTag<SVGLineElement>("line", ...c);
-export const linearGradient = (...c: C) => svgTag<SVGLinearGradientElement>("linearGradient", ...c);
-export const marker = (...c: C) => svgTag<SVGMarkerElement>("marker", ...c);
-export const mask = (...c: C) => svgTag<SVGMaskElement>("mask", ...c);
-export const metadata = (...c: C) => svgTag<SVGMetadataElement>("metadata", ...c);
-export const mpath = (...c: C) => svgTag<SVGMPathElement>("mpath", ...c);
-export const path = (...c: C) => svgTag<SVGPathElement>("path", ...c);
-export const pattern = (...c: C) => svgTag<SVGPatternElement>("pattern", ...c);
-export const polygon = (...c: C) => svgTag<SVGPolygonElement>("polygon", ...c);
-export const polyline = (...c: C) => svgTag<SVGPolylineElement>("polyline", ...c);
-export const radialGradient = (...c: C) => svgTag<SVGRadialGradientElement>("radialGradient", ...c);
-export const rect = (...c: C) => svgTag<SVGRectElement>("rect", ...c);
-export const script = (...c: C) => svgTag<SVGScriptElement>("script", ...c);
-export const set = (...c: C) => svgTag<SVGSetElement>("set", ...c);
-export const stop = (...c: C) => svgTag<SVGStopElement>("stop", ...c);
-export const style = (...c: C) => svgTag<SVGStyleElement>("style", ...c);
-export const svg = (...c: C) => svgTag<SVGSVGElement>("svg", ...c);
-export const switchTag = (...c: C) => svgTag<SVGSwitchElement>("switch", ...c);
-export const symbol = (...c: C) => svgTag<SVGSymbolElement>("symbol", ...c);
-export const text = (...c: C) => svgTag<SVGTextElement>("text", ...c);
-export const textPath = (...c: C) => svgTag<SVGTextPathElement>("textPath", ...c);
-export const title = (...c: C) => svgTag<SVGTitleElement>("title", ...c);
-export const tspan = (...c: C) => svgTag<SVGTSpanElement>("tspan", ...c);
-export const use = (...c: C) => svgTag<SVGUseElement>("use", ...c);
-export const view = (...c: C) => svgTag<SVGViewElement>("view", ...c);
+export const a = (attrs: A, ...c: C) => mkSvgElement("a", attrs, ...c); //SVGAElement
+export const animate = (attrs: A, ...c: C) =>
+  mkSvgElement("animate", attrs, ...c); //SVGAnimateElement
+export const animateMotion = (attrs: A, ...c: C) =>
+  mkSvgElement("animateMotion", attrs, ...c); //SVGAnimateMotionElement
+export const animateTransform = (attrs: A, ...c: C) =>
+  mkSvgElement("animateTransform", attrs, ...c); //SVGAnimateTransformElement
+export const circle = (attrs: A, ...c: C) =>
+  mkSvgElement("circle", attrs, ...c); //SVGCircleElement
+export const clipPath = (attrs: A, ...c: C) =>
+  mkSvgElement("clipPath", attrs, ...c); //SVGClipPathElement
+export const defs = (attrs: A, ...c: C) => mkSvgElement("defs", attrs, ...c); //SVGDefsElement
+export const desc = (attrs: A, ...c: C) => mkSvgElement("desc", attrs, ...c); //SVGDescElement
+export const ellipse = (attrs: A, ...c: C) =>
+  mkSvgElement("ellipse", attrs, ...c); //SVGEllipseElement
+export const feBlend = (attrs: A, ...c: C) =>
+  mkSvgElement("feBlend", attrs, ...c); //SVGFEBlendElement
+export const feColorMatrix = (attrs: A, ...c: C) =>
+  mkSvgElement("feColorMatrix", attrs, ...c); //SVGFEColorMatrixElement
+export const feComponentTransfer = (attrs: A, ...c: C) =>
+  mkSvgElement("feComponentTransfer", attrs, ...c); //SVGFEComponentTransferElement
+export const feComposite = (attrs: A, ...c: C) =>
+  mkSvgElement("feComposite", attrs, ...c); //SVGFECompositeElement
+export const feConvolveMatrix = (attrs: A, ...c: C) =>
+  mkSvgElement("feConvolveMatrix", attrs, ...c); //SVGFEConvolveMatrixElement
+export const feDiffuseLighting = (attrs: A, ...c: C) =>
+  mkSvgElement("feDiffuseLighting", attrs, ...c); //SVGFEDiffuseLightingElement
+export const feDisplacementMap = (attrs: A, ...c: C) =>
+  mkSvgElement("feDisplacementMap", attrs, ...c); //SVGFEDisplacementMapElement
+export const feDistantLight = (attrs: A, ...c: C) =>
+  mkSvgElement("feDistantLight", attrs, ...c); //SVGFEDistantLightElement
+export const feDropShadow = (attrs: A, ...c: C) =>
+  mkSvgElement("feDropShadow", attrs, ...c); //SVGFEDropShadowElement
+export const feFlood = (attrs: A, ...c: C) =>
+  mkSvgElement("feFlood", attrs, ...c); //SVGFEFloodElement
+export const feFuncA = (attrs: A, ...c: C) =>
+  mkSvgElement("feFuncA", attrs, ...c); //SVGFEFuncAElement
+export const feFuncB = (attrs: A, ...c: C) =>
+  mkSvgElement("feFuncB", attrs, ...c); //SVGFEFuncBElement
+export const feFuncG = (attrs: A, ...c: C) =>
+  mkSvgElement("feFuncG", attrs, ...c); //SVGFEFuncGElement
+export const feFuncR = (attrs: A, ...c: C) =>
+  mkSvgElement("feFuncR", attrs, ...c); //SVGFEFuncRElement
+export const feGaussianBlur = (attrs: A, ...c: C) =>
+  mkSvgElement("feGaussianBlur", attrs, ...c); //SVGFEGaussianBlurElement
+export const feImage = (attrs: A, ...c: C) =>
+  mkSvgElement("feImage", attrs, ...c); //SVGFEImageElement
+export const feMerge = (attrs: A, ...c: C) =>
+  mkSvgElement("feMerge", attrs, ...c); //SVGFEMergeElement
+export const feMergeNode = (attrs: A, ...c: C) =>
+  mkSvgElement("feMergeNode", attrs, ...c); //SVGFEMergeNodeElement
+export const feMorphology = (attrs: A, ...c: C) =>
+  mkSvgElement("feMorphology", attrs, ...c); //SVGFEMorphologyElement
+export const feOffset = (attrs: A, ...c: C) =>
+  mkSvgElement("feOffset", attrs, ...c); //SVGFEOffsetElement
+export const fePointLight = (attrs: A, ...c: C) =>
+  mkSvgElement("fePointLight", attrs, ...c); //SVGFEPointLightElement
+export const feSpecularLighting = (attrs: A, ...c: C) =>
+  mkSvgElement("feSpecularLighting", attrs, ...c); //SVGFESpecularLightingElement
+export const feSpotLight = (attrs: A, ...c: C) =>
+  mkSvgElement("feSpotLight", attrs, ...c); //SVGFESpotLightElement
+export const feTile = (attrs: A, ...c: C) =>
+  mkSvgElement("feTile", attrs, ...c); //SVGFETileElement
+export const feTurbulence = (attrs: A, ...c: C) =>
+  mkSvgElement("feTurbulence", attrs, ...c); //SVGFETurbulenceElement
+export const filter = (attrs: A, ...c: C) =>
+  mkSvgElement("filter", attrs, ...c); //SVGFilterElement
+export const foreignObject = (attrs: A, ...c: C) =>
+  mkSvgElement("foreignObject", attrs, ...c); //SVGForeignObjectElement
+export const g = (attrs: A, ...c: C) => mkSvgElement("g", attrs, ...c); //SVGGElement
+export const image = (attrs: A, ...c: C) => mkSvgElement("image", attrs, ...c); //SVGImageElement
+export const line = (attrs: A, ...c: C) => mkSvgElement("line", attrs, ...c); //SVGLineElement
+export const linearGradient = (attrs: A, ...c: C) =>
+  mkSvgElement("linearGradient", attrs, ...c); //SVGLinearGradientElement
+export const marker = (attrs: A, ...c: C) =>
+  mkSvgElement("marker", attrs, ...c); //SVGMarkerElement
+export const mask = (attrs: A, ...c: C) => mkSvgElement("mask", attrs, ...c); //SVGMaskElement
+export const metadata = (attrs: A, ...c: C) =>
+  mkSvgElement("metadata", attrs, ...c); //SVGMetadataElement
+export const mpath = (attrs: A, ...c: C) => mkSvgElement("mpath", attrs, ...c); //SVGMPathElement
+export const path = (attrs: A, ...c: C) => mkSvgElement("path", attrs, ...c); //SVGPathElement
+export const pattern = (attrs: A, ...c: C) =>
+  mkSvgElement("pattern", attrs, ...c); //SVGPatternElement
+export const polygon = (attrs: A, ...c: C) =>
+  mkSvgElement("polygon", attrs, ...c); //SVGPolygonElement
+export const polyline = (attrs: A, ...c: C) =>
+  mkSvgElement("polyline", attrs, ...c); //SVGPolylineElement
+export const radialGradient = (attrs: A, ...c: C) =>
+  mkSvgElement("radialGradient", attrs, ...c); //SVGRadialGradientElement
+export const rect = (attrs: A, ...c: C) => mkSvgElement("rect", attrs, ...c); //SVGRectElement
+export const script = (attrs: A, ...c: C) =>
+  mkSvgElement("script", attrs, ...c); //SVGScriptElement
+export const set = (attrs: A, ...c: C) => mkSvgElement("set", attrs, ...c); //SVGSetElement
+export const stop = (attrs: A, ...c: C) => mkSvgElement("stop", attrs, ...c); //SVGStopElement
+export const style = (attrs: A, ...c: C) => mkSvgElement("style", attrs, ...c); //SVGStyleElement
+export const svg = (attrs: A, ...c: C) => mkSvgElement("svg", attrs, ...c); //SVGSVGElement
+export const switchTag = (attrs: A, ...c: C) =>
+  mkSvgElement("switch", attrs, ...c); //SVGSwitchElement
+export const symbol = (attrs: A, ...c: C) =>
+  mkSvgElement("symbol", attrs, ...c); //SVGSymbolElement
+export const text = (attrs: A, ...c: C) => mkSvgElement("text", attrs, ...c); //SVGTextElement
+export const textPath = (attrs: A, ...c: C) =>
+  mkSvgElement("textPath", attrs, ...c); //SVGTextPathElement
+export const title = (attrs: A, ...c: C) => mkSvgElement("title", attrs, ...c); //SVGTitleElement
+export const tspan = (attrs: A, ...c: C) => mkSvgElement("tspan", attrs, ...c); //SVGTSpanElement
+export const use = (attrs: A, ...c: C) => mkSvgElement("use", attrs, ...c); //SVGUseElement
+export const view = (attrs: A, ...c: C) => mkSvgElement("view", attrs, ...c); //SVGViewElement
