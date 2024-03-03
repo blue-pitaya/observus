@@ -32,29 +32,19 @@
       "types": "./lib/dom.d.ts"
     },
     "./helpers": {
-      "import": "./lib/observus-helpers.js",
-      "require": "./lib/observus-helpers.cjs",
-      "types": "./lib/observus-helpers.d.ts"
+      "import": "./lib/helpers.js",
+      "require": "./lib/helpers.cjs",
+      "types": "./lib/helpers.d.ts"
     },
     "./tags": {
       "import": "./lib/tags.js",
       "require": "./lib/tags.cjs",
       "types": "./lib/tags.d.ts"
     },
-    "./attributes": {
-      "import": "./lib/observus-attributes.js",
-      "require": "./lib/observus-attributes.cjs",
-      "types": "./lib/observus-attributes.d.ts"
-    },
     "./svg-tags": {
-      "import": "./lib/observus-svg-tags.js",
-      "require": "./lib/observus-svg-tags.cjs",
-      "types": "./lib/observus-svg-tags.d.ts"
-    },
-    "./svg-attributes": {
-      "import": "./lib/observus-svg-attributes.js",
-      "require": "./lib/observus-svg-attributes.cjs",
-      "types": "./lib/observus-svg-attributes.d.ts"
+      "import": "./lib/svg-tags.js",
+      "require": "./lib/svg-tags.cjs",
+      "types": "./lib/svg-tags.d.ts"
     }
   },
   "scripts": {

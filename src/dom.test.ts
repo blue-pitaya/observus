@@ -210,3 +210,23 @@ test("setting event listener works", () => {
 
   expect(called).toBe(true);
 });
+
+test("null or undefined setters are ignored", () => {
+  const element = build(
+    mkElement("div", {}, "one", null, "two", undefined, "three"),
+  );
+
+  expect(element.outerHTML).toBe("<div>onetwothree</div>");
+});
+
+test("null or undefined attributes are not added", () => {
+  const element = build(
+    mkElement("div", {
+      a1: setAttr(null),
+      a2: setAttr("foo"),
+      a3: setAttr(undefined),
+    }),
+  );
+
+  expect(element.outerHTML).toBe('<div a2="foo"></div>');
+});

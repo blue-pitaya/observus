@@ -1,4 +1,4 @@
-import { isNullOrUndef, isSignal } from "./utils";
+import { NullOrUndef, isNullOrUndef, isSignal } from "./utils";
 import { Signal } from "./core";
 import { runAndObserve } from "./helpers";
 
@@ -27,6 +27,7 @@ function isBB(e: any): e is BB {
 }
 
 export type Blueprint =
+  | NullOrUndef
   | ElementBlueprint
   | string
   | Signal<BB>
@@ -109,6 +110,10 @@ export function build(blueprint: BB): any {
   });
 
   blueprint.children.forEach((bp: Blueprint) => {
+    if (isNullOrUndef(bp)) {
+      return;
+    }
+
     if (typeof bp == "object" && bp.type == "Signal") {
       const signalValue = bp.getValue();
 
