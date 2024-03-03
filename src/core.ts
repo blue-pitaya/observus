@@ -1,18 +1,14 @@
 export interface State<A> {
   type: "State";
-  isSet: boolean;
   value: A;
-  observers: Observer[];
+  observers: (() => void)[];
   set: (v: A) => void;
+  change: (v: A) => void;
   update: (f: (v: A) => A) => void;
   signal: () => Signal<A>;
   map: <B>(f: (v: A) => B) => Signal<B>;
 }
 
-export interface Observer {
-  type: "Observer";
-  next: () => void;
-}
 
 export interface Signal<A> {
   type: "Signal";
@@ -44,13 +40,15 @@ const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
 
 export const mkState = <A>(initialValue: A): State<A> => ({
   type: "State",
-  isSet: true,
   value: initialValue,
   observers: [],
   set(v) {
-    this.isSet = true;
     this.value = v;
-    this.observers.forEach((o) => o.next());
+    this.observers.forEach((o) => o());
+  },
+  change(v) {
+    this.value = v;
+    this.observers.forEach((o) => o());
   },
   update(f) {
     this.set(f(this.value));
@@ -76,20 +74,17 @@ export function constSignal<A>(v: A): Signal<A> {
 
 /* returns "unobserve" function */
 export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
-  const observer: Observer = {
-    type: "Observer",
-    next: () => next(s.getValue()),
-  };
+  const f = () => next(s.getValue());
+
   s.sources.forEach((state) => {
-    state.observers.push(observer);
+    state.observers.push(f);
   });
-  const unobserveFn = () => {
+
+  return () => {
     s.sources.forEach((state) => {
-      state.observers = state.observers.filter((o) => o !== observer);
+      state.observers = state.observers.filter((o) => o !== f);
     });
   };
-
-  return unobserveFn;
 }
 
 export function combine<A>(
