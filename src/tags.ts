@@ -1,9 +1,9 @@
-import { BB, mkElement } from "./dom";
+import { Blueprint, mkElement } from "./dom";
 
 //Tags from typescript DOM lib 5.2.2 (typescript/lib/lib.dom.d.ts)
 
 type A = Record<string, any>;
-type C = BB[];
+type C = Blueprint[];
 
 export const a = (attrs: A, ...c: C) => mkElement("a", attrs, ...c); //HTMLAnchorElement
 export const abbr = (attrs: A, ...c: C) => mkElement("abbr", attrs, ...c); //HTMLElement

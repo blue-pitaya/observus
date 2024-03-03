@@ -26,6 +26,7 @@ function isBB(e: any): e is BB {
   );
 }
 
+//TODO: add Node as separate entity?
 export type Blueprint =
   | NullOrUndef
   | ElementBlueprint

@@ -23,14 +23,16 @@ export interface Signal<A> {
 
 export type FreeFn = () => void;
 
-const createSignal = <A>(s: State<A>): Signal<A> => ({
-  type: "Signal",
-  sources: [s],
-  getValue: () => s.value,
-  map(f) {
-    return mapSignal(this, f);
-  },
-});
+function createSignal<A>(s: State<A>): Signal<A> {
+  return {
+    type: "Signal",
+    sources: [s],
+    getValue: () => s.value,
+    map(f) {
+      return mapSignal(this, f);
+    },
+  };
+}
 
 const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
   ...s,
@@ -61,14 +63,16 @@ export const mkState = <A>(initialValue: A): State<A> => ({
   },
 });
 
-export const constSignal = <A>(v: A): Signal<A> => ({
-  type: "Signal",
-  sources: [],
-  getValue: () => v,
-  map(f) {
-    return mapSignal(this, f);
-  },
-});
+export function constSignal<A>(v: A): Signal<A> {
+  return {
+    type: "Signal",
+    sources: [],
+    getValue: () => v,
+    map(f) {
+      return mapSignal(this, f);
+    },
+  };
+}
 
 /* returns "unobserve" function */
 export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {

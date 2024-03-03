@@ -1,9 +1,9 @@
-import { BB, mkSvgElement } from "./dom";
+import { Blueprint, mkSvgElement } from "./dom";
 
 //List generated from scraped data from MDN
 
 type A = Record<string, any>;
-type C = BB[];
+type C = Blueprint[];
 
 export const a = (attrs: A, ...c: C) => mkSvgElement("a", attrs, ...c); //SVGAElement
 export const animate = (attrs: A, ...c: C) =>
