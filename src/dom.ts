@@ -32,7 +32,7 @@ export type Blueprint =
   | string
   | Signal<BB>
   | Signal<BB[]>
-  | Signal<Element[]>;
+  | Signal<Node[]>;
 
 //TODO: add on_mounted typings
 export function mkElement(
