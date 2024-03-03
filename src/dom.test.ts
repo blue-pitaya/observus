@@ -1,4 +1,4 @@
-import { build, mkElement, mkSvgElement, setAttr } from "./dom";
+import { build, mkElement, setAttr } from "./dom";
 import { mkState } from "./core";
 
 test("1", () => {

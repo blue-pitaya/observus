@@ -119,8 +119,8 @@ test("combined signal works correctly", () => {
   );
 
   expect(combined.getValue()).toEqual("abf");
-  a.update(() => "w");
+  a.set("w");
   expect(combined.getValue()).toEqual("wbf");
-  b.update(() => "t");
+  b.set("t");
   expect(combined.getValue()).toEqual("wtf");
 });

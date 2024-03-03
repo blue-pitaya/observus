@@ -1,4 +1,4 @@
-import { FreeFn, Signal, State, mkState, observe } from "./core";
+import { FreeFn, Signal, mkState, observe } from "./core";
 import { ElementBlueprint, build } from "./dom";
 
 interface HasId<A, B> {

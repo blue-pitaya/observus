@@ -3,12 +3,9 @@ export interface State<A> {
   value: A;
   observers: (() => void)[];
   set: (v: A) => void;
-  change: (v: A) => void;
-  update: (f: (v: A) => A) => void;
-  signal: () => Signal<A>;
   map: <B>(f: (v: A) => B) => Signal<B>;
+  signal: () => Signal<A>;
 }
-
 
 export interface Signal<A> {
   type: "Signal";
@@ -19,69 +16,65 @@ export interface Signal<A> {
 
 export type FreeFn = () => void;
 
-function createSignal<A>(s: State<A>): Signal<A> {
-  return {
-    type: "Signal",
-    sources: [s],
-    getValue: () => s.value,
-    map(f) {
-      return mapSignal(this, f);
+export function mkState<A>(initialValue: A): State<A> {
+  const state: State<A> = {
+    type: "State",
+    value: initialValue,
+    observers: [],
+    set: (nextValue: A) => {
+      state.value = nextValue;
+      state.observers.forEach((next) => next());
+    },
+    map: (f) => {
+      return map(state, f);
+    },
+    signal: () => {
+      return map(state, (v) => v);
     },
   };
+
+  return state;
 }
 
-const mapSignal = <A, B>(s: Signal<A>, f: (v: A) => B): Signal<B> => ({
-  ...s,
-  getValue: () => f(s.getValue()),
-  map: function <C>(g: (v: B) => C): Signal<C> {
-    return mapSignal(this, g);
-  },
-});
+function map<A, B>(s: State<A> | Signal<A>, fn: (v: A) => B): Signal<B> {
+  const signal: Signal<B> = {
+    type: "Signal",
+    sources: s.type == "State" ? [s] : s.sources,
+    getValue: s.type == "State" ? () => fn(s.value) : () => fn(s.getValue()),
+    map: function <C>(g: (v: B) => C): Signal<C> {
+      return map(signal, g);
+    },
+  };
 
-export const mkState = <A>(initialValue: A): State<A> => ({
-  type: "State",
-  value: initialValue,
-  observers: [],
-  set(v) {
-    this.value = v;
-    this.observers.forEach((o) => o());
-  },
-  change(v) {
-    this.value = v;
-    this.observers.forEach((o) => o());
-  },
-  update(f) {
-    this.set(f(this.value));
-  },
-  signal() {
-    return createSignal(this);
-  },
-  map(f) {
-    return mapSignal(this.signal(), f);
-  },
-});
+  return signal;
+}
 
-export function constSignal<A>(v: A): Signal<A> {
-  return {
+export function signal<A>(value: A): Signal<A> {
+  const signal: Signal<A> = {
     type: "Signal",
     sources: [],
-    getValue: () => v,
-    map(f) {
-      return mapSignal(this, f);
+    getValue: () => value,
+    map: function <C>(g: (v: A) => C): Signal<C> {
+      return map(signal, g);
     },
   };
+
+  return signal;
 }
 
-/* returns "unobserve" function */
-export function observe<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
-  const f = () => next(s.getValue());
+export function observe<A>(
+  s: State<A> | Signal<A>,
+  next: (v: A) => void,
+): FreeFn {
+  const signal = s.type == "State" ? map(s, (v) => v) : s;
+  const f = () => next(signal.getValue());
 
-  s.sources.forEach((state) => {
+  signal.sources.forEach((state) => {
     state.observers.push(f);
   });
 
   return () => {
-    s.sources.forEach((state) => {
+    signal.sources.forEach((state) => {
       state.observers = state.observers.filter((o) => o !== f);
     });
   };
@@ -91,33 +84,25 @@ export function combine<A>(
   signals: Signal<any>[],
   mapping: (v: any[]) => A,
 ): Signal<A> {
-  return {
+  const signal: Signal<A> = {
     type: "Signal",
     sources: signals.flatMap((s) => s.sources),
     getValue: () => mapping(signals.map((s) => s.getValue())),
-    map(f) {
-      return mapSignal(this, f);
+    map: function <C>(g: (v: A) => C): Signal<C> {
+      return map(signal, g);
     },
   };
+
+  return signal;
 }
 
-//TODO: could i use combine function to do this? xd
-//TEST: observe must set value on proxyState immidetly
-export function flatten<A>(
-  superSignal: Signal<Signal<A>>,
-): [Signal<A>, FreeFn] {
-  const proxyState = mkState<A | undefined>(undefined);
-  let freeFn: () => void = () => {};
-  const free2 = observe(superSignal, (signal) => {
-    freeFn();
-    freeFn = observe(signal, (v) => {
-      proxyState.set(v);
-    });
-  });
-  const totalFree = () => {
-    freeFn();
-    free2();
-  };
-
-  return [proxyState.signal() as Signal<A>, totalFree];
-}
+//export function flatten<A>(superSignal: Signal<Signal<A>>): Signal<A> {
+//  const proxyState = mkState<A | undefined>(undefined);
+//  observe(superSignal, (signal) => {
+//    observe(signal, (v) => {
+//      update(proxyState, v);
+//    });
+//  });
+//
+//  return signal(proxyState) as Signal<A>;
+//}
