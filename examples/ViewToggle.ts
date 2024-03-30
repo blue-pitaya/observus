@@ -2,7 +2,7 @@ import { mkState } from "../src/core";
 import { mkText } from "../src/dom2";
 import { button, div, span } from "../src/tags";
 
-export function viewToggleExample(element: Element) {
+export function ViewToggle() {
   const count = mkState(0);
 
   const view1 = span(
@@ -22,8 +22,7 @@ export function viewToggleExample(element: Element) {
   const showView1 = mkState(true);
   const currentView = showView1.map((v) => (v ? view1 : view2));
 
-  element.appendChild(
-    div(
+    return div(
       {},
       currentView,
       button(
@@ -38,6 +37,5 @@ export function viewToggleExample(element: Element) {
         },
         mkText("Increment counter"),
       ),
-    ),
-  );
+    )
 }

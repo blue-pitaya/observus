@@ -35,7 +35,7 @@ export function mkElement<K extends keyof HTMLElementTagNameMap>(
   tagName: K,
   attrs: ObAttrs,
   ...children: ObChildren
-): HTMLElement {
+): HTMLElementTagNameMap[K] {
   const element = document.createElement(tagName);
 
   Object.keys(attrs).forEach((key) => {
