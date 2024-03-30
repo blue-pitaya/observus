@@ -230,3 +230,7 @@ test("null or undefined attributes are not added", () => {
 
   expect(element.outerHTML).toBe('<div a2="foo"></div>');
 });
+
+test("set attr on signal is working", () => {
+  expect(false).toBe(true);
+});

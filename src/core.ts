@@ -96,6 +96,16 @@ export function combine<A>(
   return signal;
 }
 
+export function bind<A>(
+  element: Element,
+  signal: Signal<A>,
+  fn: (element: Element, value: A) => void,
+) {
+  observe(signal, (value) => {
+    fn(element, value);
+  });
+}
+
 //export function flatten<A>(superSignal: Signal<Signal<A>>): Signal<A> {
 //  const proxyState = mkState<A | undefined>(undefined);
 //  observe(superSignal, (signal) => {
