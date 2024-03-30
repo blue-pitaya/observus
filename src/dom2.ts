@@ -1,44 +1,111 @@
 import { Signal, observe } from "./core";
+import { runAndObserve } from "./helpers";
+import { isNullOrUndef, isSignal } from "./utils";
 
-type Setter = any;
-
-export function bind(element: Element, attrs: Record<string, Setter>) {
-
+export interface ObservusTrait {
+  name: string;
+  callback: (e: Element) => void;
 }
 
-function mkElement<K extends keyof HTMLElementTagNameMap>(
+export function installTraits(...traits: ObservusTrait[]) {
+  const elements = document.querySelectorAll("[ob-use]");
+
+  console.log(elements);
+
+  elements.forEach((element) => {
+    const traitNames = (element.getAttribute("ob-use") ?? "").split(" ");
+    traitNames.forEach((traitName) => {
+      const trait = traits.find((v) => v.name == traitName);
+      if (trait) {
+        trait.callback(element);
+      }
+    });
+  });
+}
+
+export type ObAttrs = Record<string, string | (() => void)>;
+
+//export function bind(element: Element, attrs: Record<string, Setter>) {
+//
+//}
+
+export type ObChildren = (Node | Signal<Node>)[];
+
+export function mkElement<K extends keyof HTMLElementTagNameMap>(
   tagName: K,
-  attrs: Record<string, Setter>,
-  ...children: Node[]
+  attrs: ObAttrs,
+  ...children: ObChildren
 ): HTMLElement {
   const element = document.createElement(tagName);
 
-  children.forEach((e) => element.appendChild(e));
+  Object.keys(attrs).forEach((key) => {
+    const value = attrs[key];
 
-  return element;
-}
+    if (typeof value === "string") {
+      element.setAttribute(key, value);
+      return;
+    }
 
-function mkSvgElement(
-  tagName: string,
-  attrs: Record<string, Setter>,
-  ...children: Node[]
-): SVGElement {
-  const element = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    tagName,
-  );
+    if (key.startsWith("on_")) {
+      const eventName = key.substring(3);
 
-  children.forEach((e) => element.appendChild(e));
+      //if (eventName == "created") {
+      //  setOnMounted(value);
+      //} else {
+      element.addEventListener(eventName, value);
+      //}
 
-  return element;
-}
-
-function mkText(signal: Signal<string>): Text {
-  const node = document.createTextNode(signal.getValue());
-
-  observe(signal, (value) => {
-    node.textContent = value;
+      return;
+    }
   });
 
-  return node;
+  children.forEach((child) => {
+    if (isSignal<Node>(child)) {
+      //child is Signal<Node>
+      let lastElement: Node | null = null;
+      runAndObserve(child, (el: Node) => {
+        if (lastElement !== null) {
+          element.replaceChild(el, lastElement);
+        } else {
+          element.appendChild(el);
+        }
+
+        lastElement = el;
+      });
+    } else {
+      //child is Node
+      element.appendChild(child);
+    }
+  });
+
+  return element;
+}
+
+//function mkSvgElement(
+//  tagName: string,
+//  attrs: Record<string, Setter>,
+//  ...children: Node[]
+//): SVGElement {
+//  const element = document.createElementNS(
+//    "http://www.w3.org/2000/svg",
+//    tagName,
+//  );
+//
+//  children.forEach((e) => element.appendChild(e));
+//
+//  return element;
+//}
+
+export function mkText(value: string | Signal<string>): Text {
+  if (isSignal<string>(value)) {
+    const node = document.createTextNode(value.getValue());
+
+    runAndObserve(value, (v) => {
+      node.textContent = v;
+    });
+
+    return node;
+  }
+
+  return document.createTextNode(value);
 }

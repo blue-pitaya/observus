@@ -1,4 +1,4 @@
-import { Signal, constSignal, mkState } from "observus";
+import { Signal, mkState, signal } from "../../src/core";
 
 const a = mkState(10);
 
@@ -20,4 +20,4 @@ console.log(otherSignal.getValue()); // a = 3, ((3 * 2) + 2) * 5 = 40
 
 // create constant signal
 // useful when function requires signal, but you want to pass value
-const immutableSignal = constSignal("hehe");
+const immutableSignal = signal("hehe");

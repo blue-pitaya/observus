@@ -217,7 +217,7 @@ function handleAttr(
     return;
   }
 
-  if (isSignal(value)) {
+  if (isSignal<any>(value)) {
     runAndObserve(value, (v: string) => {
       applyPrimitive(v);
     });

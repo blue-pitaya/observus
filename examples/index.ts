@@ -1,6 +1,14 @@
-import { build } from "../src/dom";
-import { div } from "../src/tags";
+import { installTraits } from "../src/dom2";
+import { stopwatch } from "./stopwatch";
+import { viewToggleExample } from "./viewToggle";
 
-const container = document.querySelector("#app")!;
-
-container.appendChild(build(div({}, "elo")));
+installTraits(
+  {
+    name: "stopwatch",
+    callback: stopwatch,
+  },
+  {
+    name: "view-toggle-example",
+    callback: viewToggleExample,
+  },
+);
