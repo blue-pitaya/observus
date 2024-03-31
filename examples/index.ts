@@ -1,5 +1,5 @@
 import "./style.css";
-import { installTraits } from "../src/dom2";
+import { installTraits } from "../src/dom";
 import { Stopwatch } from "./Stopwatch";
 import { TextInputExample } from "./TextInputExample";
 import { TodoList } from "./TodoListExample";

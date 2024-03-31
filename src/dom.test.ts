@@ -1,15 +1,13 @@
-import { build, mkElement, setAttr } from "./dom";
-import { mkState } from "./core";
+import { mkElement, mkText } from "./dom";
+import { Signal, mkState } from "./core";
 
 test("1", () => {
-  const element = build(
-    mkElement(
-      "div",
-      {
-        className: "foo",
-      },
-      mkElement("span", {}, "bar"),
-    ),
+  const element = mkElement(
+    "div",
+    {
+      className: "foo",
+    },
+    mkElement("span", {}, mkText("bar")),
   );
 
   expect(element.tagName).toBe("DIV");
@@ -19,10 +17,9 @@ test("1", () => {
 
 test("2", () => {
   const classNameState = mkState("foo");
-  const elementSetter = mkElement("div", {
+  const element = mkElement("div", {
     className: classNameState.signal(),
   });
-  const element = build(elementSetter);
 
   expect(element.tagName).toBe("DIV");
   expect(element.className).toBe("foo");
@@ -30,61 +27,55 @@ test("2", () => {
 
 test("3", () => {
   let called = false;
-  build(
-    mkElement(
-      "div",
-      {
-        className: "foo",
-        on_created: () => {
-          called = true;
-        },
+  mkElement(
+    "div",
+    {
+      className: "foo",
+      on_created: () => {
+        called = true;
       },
-      mkElement("span", {}, "bar"),
-    ),
+    },
+    mkElement("span", {}, mkText("bar")),
   );
 
   expect(called).toBe(true);
 });
 
 test("attrs handle numeric value", () => {
-  const element = build(
-    mkElement("textarea", {
-      rows: 300,
-    }),
-  );
+  const element = mkElement("textarea", {
+    rows: 300,
+  });
 
   expect(element.outerHTML).toBe('<textarea rows="300"></textarea>');
 });
 
-test("custom attr can be set using setAttribute", () => {
-  const element = build(
-    mkElement("div", {
-      foo: setAttr("bar"),
-    }),
-  );
+//test("custom attr can be set using setAttribute", () => {
+//  const element = build(
+//    mkElement("div", {
+//      foo: setAttr("bar"),
+//    }),
+//  );
+//
+//  expect(element.outerHTML).toBe('<div foo="bar"></div>');
+//});
 
-  expect(element.outerHTML).toBe('<div foo="bar"></div>');
-});
-
-test("attr is removed is signal value is undefined for set attr strategy", () => {
-  const className = mkState<string | undefined>("bar");
-  const element = build(
-    mkElement("div", {
-      foo: setAttr(className.signal()),
-    }),
-  );
-  className.set(undefined);
-
-  expect(element.outerHTML).toBe("<div></div>");
-});
+//test("attr is removed is signal value is undefined for set attr strategy", () => {
+//  const className = mkState<string | undefined>("bar");
+//  const element = build(
+//    mkElement("div", {
+//      foo: setAttr(className.signal()),
+//    }),
+//  );
+//  className.set(undefined);
+//
+//  expect(element.outerHTML).toBe("<div></div>");
+//});
 
 test("boolean attributes are handled", () => {
-  const element = build(
-    mkElement("input", {
-      type: "text",
-      required: true,
-    }),
-  );
+  const element = mkElement("input", {
+    type: "text",
+    required: true,
+  });
 
   const expected = document.createElement("input");
   expected.type = "text";
@@ -95,7 +86,7 @@ test("boolean attributes are handled", () => {
 
 test("text signal as element blueprint works", () => {
   const text = mkState("foo");
-  const element = build(mkElement("div", {}, text.signal()));
+  const element = mkElement("div", {}, mkText(text.signal()));
 
   text.set("bar");
 
@@ -105,10 +96,12 @@ test("text signal as element blueprint works", () => {
 test("element signal works", () => {
   const state = mkState(true);
   const signal = state.map((v) => {
-    return v ? mkElement("p", {}, "foo") : mkElement("span", {}, "bar");
+    return v
+      ? mkElement("p", {}, mkText("foo"))
+      : mkElement("span", {}, mkText("bar"));
   });
 
-  const element = build(mkElement("div", {}, signal));
+  const element = mkElement("div", {}, signal);
   expect(element.outerHTML).toBe("<div><p>foo</p></div>");
 
   state.set(false);
@@ -119,19 +112,21 @@ test("elements array signal works", () => {
   const state = mkState(true);
   const signal = state.map((v) => {
     return v
-      ? [mkElement("p", {}, "foo"), mkElement("span", {}, "bar")]
-      : [mkElement("div", {}, "baz")];
+      ? [
+          mkElement("p", {}, mkText("foo")),
+          mkElement("span", {}, mkText("bar")),
+        ]
+      : [mkElement("div", {}, mkText("baz"))];
   });
 
-  const element = build(
-    mkElement(
-      "div",
-      {},
-      mkElement("p", {}, "prev"),
-      signal,
-      mkElement("p", {}, "next"),
-    ),
+  const element = mkElement(
+    "div",
+    {},
+    mkElement("p", {}, mkText("prev")),
+    signal,
+    mkElement("p", {}, mkText("next")),
   );
+
   expect(element.outerHTML).toBe(
     "<div><p>prev</p><p>foo</p><span>bar</span><p>next</p></div>",
   );
@@ -144,21 +139,20 @@ test("elements array signal works", () => {
 
 test("elements array signal with strings works", () => {
   const state = mkState(true);
-  const signal = state.map((v) => {
+  const signal: Signal<Node[]> = state.map((v) => {
     return v
-      ? [mkElement("p", {}, "foo"), "bar"]
-      : [mkElement("div", {}, "baz")];
+      ? [mkElement("p", {}, mkText("foo")), mkText("bar")]
+      : [mkElement("div", {}, mkText("baz"))];
   });
 
-  const element = build(
-    mkElement(
-      "div",
-      {},
-      mkElement("p", {}, "prev"),
-      signal,
-      mkElement("p", {}, "next"),
-    ),
+  const element = mkElement(
+    "div",
+    {},
+    mkElement("p", {}, mkText("prev")),
+    signal,
+    mkElement("p", {}, mkText("next")),
   );
+
   expect(element.outerHTML).toBe(
     "<div><p>prev</p><p>foo</p>bar<p>next</p></div>",
   );
@@ -169,67 +163,57 @@ test("elements array signal with strings works", () => {
   );
 });
 
-test("built elements array signal works", () => {
-  const state = mkState(true);
-  const readyElement = build(mkElement("div", {}, "1"));
-  const signal = state.map((v) => {
-    return v
-      ? [readyElement, mkElement("p", {}, "foo"), "bar"]
-      : [mkElement("div", {}, "baz")];
-  });
-
-  const element = build(
-    mkElement(
-      "div",
-      {},
-      mkElement("p", {}, "prev"),
-      signal,
-      mkElement("p", {}, "next"),
-    ),
-  );
-  expect(element.outerHTML).toBe(
-    "<div><p>prev</p><div>1</div><p>foo</p>bar<p>next</p></div>",
-  );
-
-  state.set(false);
-  expect(element.outerHTML).toBe(
-    "<div><p>prev</p><div>baz</div><p>next</p></div>",
-  );
-});
+//test("built elements array signal works", () => {
+//  const state = mkState(true);
+//  const readyElement = build(mkElement("div", {}, "1"));
+//  const signal = state.map((v) => {
+//    return v
+//      ? [readyElement, mkElement("p", {}, "foo"), "bar"]
+//      : [mkElement("div", {}, "baz")];
+//  });
+//
+//  const element = build(
+//    mkElement(
+//      "div",
+//      {},
+//      mkElement("p", {}, "prev"),
+//      signal,
+//      mkElement("p", {}, "next"),
+//    ),
+//  );
+//  expect(element.outerHTML).toBe(
+//    "<div><p>prev</p><div>1</div><p>foo</p>bar<p>next</p></div>",
+//  );
+//
+//  state.set(false);
+//  expect(element.outerHTML).toBe(
+//    "<div><p>prev</p><div>baz</div><p>next</p></div>",
+//  );
+//});
 
 test("setting event listener works", () => {
   let called = false;
-  const element = build(
-    mkElement("div", {
-      on_click: () => {
-        called = true;
-      },
-    }),
-  );
+  const element = mkElement("div", {
+    on_click: () => {
+      called = true;
+    },
+  });
   element.click();
 
   expect(called).toBe(true);
 });
 
-test("null or undefined setters are ignored", () => {
-  const element = build(
-    mkElement("div", {}, "one", null, "two", undefined, "three"),
-  );
-
-  expect(element.outerHTML).toBe("<div>onetwothree</div>");
-});
-
-test("null or undefined attributes are not added", () => {
-  const element = build(
-    mkElement("div", {
-      a1: setAttr(null),
-      a2: setAttr("foo"),
-      a3: setAttr(undefined),
-    }),
-  );
-
-  expect(element.outerHTML).toBe('<div a2="foo"></div>');
-});
+//test("null or undefined attributes are not added", () => {
+//  const element = build(
+//    mkElement("div", {
+//      a1: setAttr(null),
+//      a2: setAttr("foo"),
+//      a3: setAttr(undefined),
+//    }),
+//  );
+//
+//  expect(element.outerHTML).toBe('<div a2="foo"></div>');
+//});
 
 test("set attr on signal is working", () => {
   expect(false).toBe(true);

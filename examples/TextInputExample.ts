@@ -1,5 +1,5 @@
 import { mkState } from "../src/core";
-import { mkText } from "../src/dom2";
+import { mkText } from "../src/dom";
 import { button, div, input, p } from "../src/tags";
 
 export function TextInputExample() {

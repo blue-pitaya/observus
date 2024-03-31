@@ -1,4 +1,4 @@
-import { ObChildren, ObAttrs, mkElement } from "./dom2";
+import { ObChildren, ObAttrs, mkElement } from "./dom";
 
 //Tags from typescript DOM lib 5.2.2 (typescript/lib/lib.dom.d.ts)
 
