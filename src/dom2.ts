@@ -23,7 +23,7 @@ export function installTraits(...traits: ObservusTrait[]) {
   });
 }
 
-export type ObAttrs = Record<string, string | (() => void)>;
+export type ObAttrs = Record<string, any>;
 
 //export function bind(element: Element, attrs: Record<string, Setter>) {
 //
@@ -38,21 +38,35 @@ export function mkElement<K extends keyof HTMLElementTagNameMap>(
 ): HTMLElementTagNameMap[K] {
   const element = document.createElement(tagName);
 
-  Object.keys(attrs).forEach((key) => {
-    const value = attrs[key];
+  Object.keys(attrs).forEach((attrKey) => {
+    const attrValue = attrs[attrKey];
 
-    if (typeof value === "string") {
-      element.setAttribute(key, value);
+    const setAttr = (v: any) => {
+      //TODO: also allow element.setAttribute(...)
+      //@ts-ignore
+      element[attrKey] = v;
+    };
+
+    if (typeof attrValue === "string") {
+      setAttr(attrValue);
       return;
     }
 
-    if (key.startsWith("on_")) {
-      const eventName = key.substring(3);
+    if (isSignal<string>(attrValue)) {
+      runAndObserve(attrValue, (value) => {
+        console.log(value);
+        setAttr(value);
+      });
+    }
 
+    if (attrKey.startsWith("on_")) {
+      const eventName = attrKey.substring(3);
+
+      //TODO:
       //if (eventName == "created") {
       //  setOnMounted(value);
       //} else {
-      element.addEventListener(eventName, value);
+      element.addEventListener(eventName, attrValue);
       //}
 
       return;

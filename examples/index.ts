@@ -1,5 +1,6 @@
 import { installTraits } from "../src/dom2";
 import { Stopwatch } from "./Stopwatch";
+import { TextInputExample } from "./TextInputExample";
 import { TodoList } from "./TodoListExample";
 import { ViewToggle } from "./ViewToggle";
 
@@ -20,6 +21,12 @@ installTraits(
     name: "todo-list-example",
     callback: (e: Element) => {
       e.appendChild(TodoList());
+    },
+  },
+  {
+    name: "text-input-example",
+    callback: (e: Element) => {
+      e.appendChild(TextInputExample());
     },
   },
 );

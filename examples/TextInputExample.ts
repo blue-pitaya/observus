@@ -1,29 +1,26 @@
-//import { attr, mkState, on, tag, textSignal } from "observus";
-//
-////TODO: explain why is this important using laminar doc on "controlled"
-////TODO: example of input that blocks numbers
-////TEST: what happend if i use restricted for 2 inputs?
-//
-//export function TextInputExample() {
-//  const defaultValue = "I'm always looking";
-//  const value = mkState(defaultValue);
-//  const label = value.map((v) => `Current value: ${v}`);
-//
-//  return tag(
-//    "div",
-//    tag("p", textSignal(label)),
-//    tag(
-//      "input",
-//      attr("type", "text"),
-//      attr("value", value.signal()),
-//      on("input", (e: any) => {
-//        value.update(() => e.target.value);
-//      }),
-//    ),
-//    tag(
-//      "button",
-//      on("click", () => value.update(() => defaultValue)),
-//      "Reset input",
-//    ),
-//  );
-//}
+import { mkState } from "../src/core";
+import { mkText } from "../src/dom2";
+import { button, div, input, p } from "../src/tags";
+
+export function TextInputExample() {
+  const defaultText = "I'm always looking";
+  const textInputValue = mkState(defaultText);
+
+  return div(
+    {},
+    p({}, mkText(textInputValue.map((v) => `Current value: ${v}`))),
+    input({
+      type: "text",
+      value: textInputValue.signal(),
+      on_input: (e: any) => {
+        textInputValue.set(e.target.value);
+      },
+    }),
+    button(
+      {
+        on_click: () => textInputValue.set(defaultText),
+      },
+      mkText("Reset input"),
+    ),
+  );
+}
