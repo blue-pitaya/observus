@@ -1,3 +1,4 @@
+import "./style.css";
 import { installTraits } from "../src/dom2";
 import { Stopwatch } from "./Stopwatch";
 import { TextInputExample } from "./TextInputExample";

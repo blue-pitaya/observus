@@ -1,20 +1,116 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Observus</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite + TS</title>
-</head>
+  <body>
+    <div class="flex flex-col">
+      <div class="flex flex-col items-center">
+        <img src="/logo.svg" style="width: 140px" />
+        <h1 class="logo-text">OBSERVUS</h1>
+        <p style="font-family: monospace">
+          Simple and minimal reactive UI library for web.
+        </p>
+      </div>
+      <div class="flex flex-col items-left" style="margin-top: 48px">
+        <h1>Getting started</h1>
+        <p>You can install observus by running:"</p>
+        <pre><code>pnpm add observus</code></pre>
+        <p>
+          Documentation will be extended soon. Meanwhile you can read source
+          code. Core library is only about 500 lines of code without any tricks
+          to minify it.",
+        </p>
+        <p>Library inspired by: Laminar (scala.js lib), grecha.js</p>
+      </div>
+    </div>
+    <h1 id="documentation">Documentation</h1>
+    <p>Documentation for version: 0.5.0</p>
+    <h2 id="core">Core</h2>
+    <p>
+      Observus uses “observer pattern” at its core. If you ever coded in React,
+      Vue or other mainstream js framework, you’ve alredy used it. It allows to
+      represent the state of application as data, which is single source of
+      truth.
+    </p>
+    <p>There are three concepts you should learn.</p>
+    <h3 id="state">State</h3>
+    <p>
+      State is just a “reactive” variable. Its changes can be tracked, by other
+      components of application.
+    </p>
+    <pre><code>import { State, createState } from &quot;observus&quot;;
 
-<body>
-  <div ob-use="trait1 trait2"></div>
-  <div ob-use="stopwatch"></div>
-  <div ob-use="view-toggle-example"></div>
-  <div style="margin-top: 10px" ob-use="todo-list-example"></div>
-  <div style="margin-top: 10px" ob-use="text-input-example"></div>
-  <script type="module" src="/examples/index.ts"></script>
-</body>
+      const a: State&lt;number&gt; = createState&lt;number&gt;(3);
+      const b = createState(69);
+      const c = createState&lt;string&gt;(&quot;nice&quot;);
 
+      // update state
+      a.update((x) =&gt; x * 2);
+
+      // update state without use of last value
+      b.update(() =&gt; 420);
+
+      // alias for update(() =&gt; ...)
+      c.set(&quot;hehe&quot;);
+
+      // current value of state
+      console.log(a.value); // 3 * 2 = 6
+
+      // you can safely use current value inside update functions
+      a.set(a.value + b.value + 10);
+      console.log(a.value); // 6 + 420 + 10 = 436
+    </code></pre>
+    <h3 id="signal">Signal</h3>
+    <p>
+      Signal is readonly value that is obtained from one or more states or
+      signals.
+    </p>
+    <pre><code>import { Signal, constSignal, createState } from &quot;observus&quot;;
+
+      const a = createState(10);
+
+      // create signal by mapping state
+      const timesTwo: Signal&lt;number&gt; = a.map((x) =&gt; x * 2);
+      console.log(timesTwo.getValue()); // 20
+
+      // create signal from state
+      // alias for: a.map((x) =&gt; x);
+      const aSignal = a.signal();
+
+      // updating &quot;a&quot; will update &quot;timesTwo&quot; signal
+      a.set(3);
+      console.log(timesTwo.getValue()); // 6
+
+      // signals can be mapped multiple times
+      const otherSignal = timesTwo.map((x) =&gt; x + 2).map((x) =&gt; x * 5);
+      console.log(otherSignal.getValue()); // a = 3, ((3 * 2) + 2) * 5 = 40
+
+      // create constant signal
+      // useful when function requires signal, but you want to pass value
+      const immutableSignal = constSignal(&quot;hehe&quot;);
+    </code></pre>
+    <h3 id="observer">Observer</h3>
+    <p>
+      Observer is essentialy just a callback <code>(v: A) =&gt; void</code> for
+      signal changes.
+    </p>
+    <pre><code>type FreeFn = () =&gt; void;
+      export function observe&lt;A&gt;(s: Signal&lt;A&gt;, next: (v: A) =&gt; void): FreeFn</code></pre>
+    <p>It returns function that will “unobserve” given signal.</p>
+    <h2 id="dom-building">DOM building</h2>
+    <p>TODO</p>
+
+    <h1 id="documentation">Examples</h1>
+    <div ob-use="trait1 trait2"></div>
+    <div ob-use="stopwatch"></div>
+    <div ob-use="view-toggle-example"></div>
+    <div style="margin-top: 10px" ob-use="todo-list-example"></div>
+    <div style="margin-top: 10px" ob-use="text-input-example"></div>
+    <script type="module" src="/examples/index.ts"></script>
+  </body>
 </html>
