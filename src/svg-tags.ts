@@ -1,9 +1,9 @@
-import { Blueprint, mkSvgElement } from "./dom";
+import { ObAttrs, ObChildren, mkSvgElement } from "./dom2";
 
 //List generated from scraped data from MDN
 
-type A = Record<string, any>;
-type C = Blueprint[];
+type A = ObAttrs;
+type C = ObChildren;
 
 export const a = (attrs: A, ...c: C) => mkSvgElement("a", attrs, ...c); //SVGAElement
 export const animate = (attrs: A, ...c: C) =>
