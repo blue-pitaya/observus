@@ -1,5 +1,5 @@
 import { combine, mkState, observe } from "./core";
-import { build, mkElement } from "./dom";
+import { mkElement } from "./dom";
 
 test("observe dont run callback on definition", () => {
   let called = false;
@@ -70,37 +70,35 @@ test("observe is called only if observed signal has changed", () => {
 
 test("on_created is called in post-order fashion", () => {
   const order: string[] = [];
-  build(
+  mkElement(
+    "div",
+    {
+      id: "1",
+      on_created: () => {
+        order.push("1");
+      },
+    },
     mkElement(
       "div",
       {
-        id: "1",
+        id: "2",
         on_created: () => {
-          order.push("1");
+          order.push("2");
         },
       },
-      mkElement(
-        "div",
-        {
-          id: "2",
-          on_created: () => {
-            order.push("2");
-          },
-        },
-        mkElement("div", {
-          id: "3",
-          on_created: () => {
-            order.push("3");
-          },
-        }),
-      ),
       mkElement("div", {
-        id: "4",
+        id: "3",
         on_created: () => {
-          order.push("4");
+          order.push("3");
         },
       }),
     ),
+    mkElement("div", {
+      id: "4",
+      on_created: () => {
+        order.push("4");
+      },
+    }),
   );
 
   expect(order).toEqual(["3", "2", "4", "1"]);

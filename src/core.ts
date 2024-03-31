@@ -62,6 +62,22 @@ export function signal<A>(value: A): Signal<A> {
   return signal;
 }
 
+export function combine<A>(
+  signals: Signal<any>[],
+  mapping: (v: any[]) => A,
+): Signal<A> {
+  const signal: Signal<A> = {
+    type: "Signal",
+    sources: signals.flatMap((s) => s.sources),
+    getValue: () => mapping(signals.map((s) => s.getValue())),
+    map: function <C>(g: (v: A) => C): Signal<C> {
+      return map(signal, g);
+    },
+  };
+
+  return signal;
+}
+
 export function observe<A>(
   s: State<A> | Signal<A>,
   next: (v: A) => void,
@@ -80,39 +96,9 @@ export function observe<A>(
   };
 }
 
-export function combine<A>(
-  signals: Signal<any>[],
-  mapping: (v: any[]) => A,
-): Signal<A> {
-  const signal: Signal<A> = {
-    type: "Signal",
-    sources: signals.flatMap((s) => s.sources),
-    getValue: () => mapping(signals.map((s) => s.getValue())),
-    map: function <C>(g: (v: A) => C): Signal<C> {
-      return map(signal, g);
-    },
-  };
+export function runAndObserve<A>(s: Signal<A>, next: (v: A) => void): FreeFn {
+  const unobserve = observe(s, next);
+  next(s.getValue());
 
-  return signal;
+  return unobserve;
 }
-
-export function bind<A>(
-  element: Element,
-  signal: Signal<A>,
-  fn: (element: Element, value: A) => void,
-) {
-  observe(signal, (value) => {
-    fn(element, value);
-  });
-}
-
-//export function flatten<A>(superSignal: Signal<Signal<A>>): Signal<A> {
-//  const proxyState = mkState<A | undefined>(undefined);
-//  observe(superSignal, (signal) => {
-//    observe(signal, (v) => {
-//      update(proxyState, v);
-//    });
-//  });
-//
-//  return signal(proxyState) as Signal<A>;
-//}

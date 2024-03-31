@@ -1,5 +1,4 @@
-import { Signal } from "./core";
-import { runAndObserve } from "./helpers";
+import { Signal, runAndObserve } from "./core";
 import { isSignal } from "./utils";
 
 export interface ObservusTrait {
@@ -28,7 +27,7 @@ export function installTraits(...traits: ObservusTrait[]) {
 }
 
 export function mkText(value: string | Signal<string>): Text {
-  if (isSignal<string>(value)) {
+  if (isSignal(value)) {
     const node = document.createTextNode(value.getValue());
 
     runAndObserve(value, (v) => {
@@ -82,7 +81,7 @@ function buildElement<A extends Element>(
       return;
     }
 
-    if (isSignal<string>(attrValue)) {
+    if (isSignal(attrValue)) {
       runAndObserve(attrValue, (value) => {
         setAttr(value);
       });
@@ -102,7 +101,7 @@ function buildElement<A extends Element>(
   });
 
   children.forEach((child) => {
-    if (isSignal<any>(child)) {
+    if (isSignal(child)) {
       if (Array.isArray(child.getValue())) {
         //Signal<Node[]>
         const nodesSignal = child as Signal<Node[]>;
