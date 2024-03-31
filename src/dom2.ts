@@ -7,6 +7,10 @@ export interface ObservusTrait {
   callback: (e: Element) => void;
 }
 
+export type ObAttrs = Record<string, any>;
+
+export type ObChildren = (Node | Signal<Node> | Signal<Element[]>)[];
+
 export function installTraits(...traits: ObservusTrait[]) {
   const elements = document.querySelectorAll("[ob-use]");
 
@@ -23,9 +27,19 @@ export function installTraits(...traits: ObservusTrait[]) {
   });
 }
 
-export type ObAttrs = Record<string, any>;
+export function mkText(value: string | Signal<string>): Text {
+  if (isSignal<string>(value)) {
+    const node = document.createTextNode(value.getValue());
 
-export type ObChildren = (Node | Signal<Node> | Signal<Element[]>)[];
+    runAndObserve(value, (v) => {
+      node.textContent = v;
+    });
+
+    return node;
+  }
+
+  return document.createTextNode(value);
+}
 
 export function mkElement<K extends keyof HTMLElementTagNameMap>(
   tagName: K,
@@ -52,6 +66,8 @@ function buildElement<A extends Element>(
   attrs: ObAttrs,
   ...children: ObChildren
 ): A {
+  let onCreated = (_: A) => {};
+
   Object.keys(attrs).forEach((attrKey) => {
     const attrValue = attrs[attrKey];
 
@@ -68,21 +84,19 @@ function buildElement<A extends Element>(
 
     if (isSignal<string>(attrValue)) {
       runAndObserve(attrValue, (value) => {
-        console.log(value);
         setAttr(value);
       });
+      return;
     }
 
     if (attrKey.startsWith("on_")) {
       const eventName = attrKey.substring(3);
 
-      //TODO:
-      //if (eventName == "created") {
-      //  setOnMounted(value);
-      //} else {
-      element.addEventListener(eventName, attrValue);
-      //}
-
+      if (eventName == "created") {
+        onCreated = attrValue;
+      } else {
+        element.addEventListener(eventName, attrValue);
+      }
       return;
     }
   });
@@ -90,35 +104,31 @@ function buildElement<A extends Element>(
   children.forEach((child) => {
     if (isSignal<any>(child)) {
       if (Array.isArray(child.getValue())) {
-        //Signal<Node[]>
-        const nodesSignal = child as Signal<Node[]>;
+        //Signal<Element[]>
+        const elementsSignal = child as Signal<Element[]>;
+
         let lastElements: Element[] | null = null;
         const elementsStartIndex = element.childNodes.length;
 
-        runAndObserve(nodesSignal, (nodes) => {
-          //FIXME: type quick hack
-          const elements = nodes as Element[];
+        runAndObserve(elementsSignal, (els) => {
           if (lastElements !== null) {
             const childNodes = [...element.childNodes];
-            childNodes.splice(
-              elementsStartIndex,
-              lastElements.length,
-              ...elements,
-            );
+            childNodes.splice(elementsStartIndex, lastElements.length, ...els);
             element.replaceChildren(...childNodes);
           } else {
-            nodes.forEach((el) => {
+            els.forEach((el) => {
               element.appendChild(el);
             });
           }
 
-          lastElements = elements;
+          lastElements = els;
         });
 
         return;
       } else {
         //Signal<Node>
         const nodeSignal = child as Signal<Node>;
+
         let lastElement: Node | null = null;
         runAndObserve(nodeSignal, (el: Node) => {
           if (lastElement !== null) {
@@ -135,19 +145,7 @@ function buildElement<A extends Element>(
     }
   });
 
+  onCreated(element);
+
   return element;
-}
-
-export function mkText(value: string | Signal<string>): Text {
-  if (isSignal<string>(value)) {
-    const node = document.createTextNode(value.getValue());
-
-    runAndObserve(value, (v) => {
-      node.textContent = v;
-    });
-
-    return node;
-  }
-
-  return document.createTextNode(value);
 }
