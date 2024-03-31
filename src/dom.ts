@@ -68,18 +68,13 @@ function buildElement<A extends Element>(
   let onCreated = (_: A) => {};
 
   Object.keys(attrs).forEach((attrKey) => {
-    const attrValue = attrs[attrKey];
-
-    const setAttr = (v: any) => {
+    function setAttr(v: any) {
       //TODO: also allow element.setAttribute(...)
       //@ts-ignore
       element[attrKey] = v;
-    };
-
-    if (typeof attrValue === "string") {
-      setAttr(attrValue);
-      return;
     }
+
+    const attrValue = attrs[attrKey];
 
     if (isSignal(attrValue)) {
       runAndObserve(attrValue, (value) => {
@@ -98,6 +93,8 @@ function buildElement<A extends Element>(
       }
       return;
     }
+
+    setAttr(attrValue);
   });
 
   children.forEach((child) => {
