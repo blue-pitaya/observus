@@ -1,4 +1,4 @@
-import { State, mkState } from "../../src/core";
+import { State, mkState } from "../../src/observus";
 
 const a: State<number> = mkState<number>(3);
 const b = mkState(69);

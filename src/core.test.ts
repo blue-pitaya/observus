@@ -1,5 +1,4 @@
-import { combine, mkState, observe } from "./core";
-import { mkElement } from "./dom";
+import { combine, mkState, observe, mkElement } from "./observus";
 
 test("observe dont run callback on definition", () => {
   let called = false;

@@ -1,4 +1,4 @@
-import { ObAttrs, ObChildren, mkSvgElement } from "./dom";
+import { ObAttrs, ObChildren, mkSvgElement } from "./observus";
 
 //List generated from scraped data from MDN
 

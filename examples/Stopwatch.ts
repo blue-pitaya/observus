@@ -1,6 +1,5 @@
-import { mkState } from "../src/core";
+import { mkState, mkText } from "../src/observus";
 import { button, div, pre } from "../src/tags";
-import { mkText } from "../src/dom";
 
 export function Stopwatch() {
   const elapsed = mkState(0);

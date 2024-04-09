@@ -1,5 +1,4 @@
-import { mkState } from "../src/core";
-import { mkText } from "../src/dom";
+import { mkState, mkText } from "../src/observus";
 import { button, div, input, p } from "../src/tags";
 
 export function TextInputExample() {

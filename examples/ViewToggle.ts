@@ -1,5 +1,4 @@
-import { mkState } from "../src/core";
-import { mkText } from "../src/dom";
+import { mkState, mkText } from "../src/observus";
 import { button, div, span } from "../src/tags";
 
 export function ViewToggle() {
@@ -22,20 +21,20 @@ export function ViewToggle() {
   const showView1 = mkState(true);
   const currentView = showView1.map((v) => (v ? view1 : view2));
 
-    return div(
-      {},
-      currentView,
-      button(
-        {
-          on_click: () => showView1.set(!showView1.value),
-        },
-        mkText("Toggle view"),
-      ),
-      button(
-        {
-          on_click: () => count.set(count.value + 1),
-        },
-        mkText("Increment counter"),
-      ),
-    )
+  return div(
+    {},
+    currentView,
+    button(
+      {
+        on_click: () => showView1.set(!showView1.value),
+      },
+      mkText("Toggle view"),
+    ),
+    button(
+      {
+        on_click: () => count.set(count.value + 1),
+      },
+      mkText("Increment counter"),
+    ),
+  );
 }

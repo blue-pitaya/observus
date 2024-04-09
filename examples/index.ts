@@ -1,32 +1,32 @@
 import "./style.css";
-import { installTraits } from "../src/dom";
+import { initObservus } from "../src/observus";
 import { Stopwatch } from "./Stopwatch";
 import { TextInputExample } from "./TextInputExample";
 import { TodoList } from "./TodoListExample";
 import { ViewToggle } from "./ViewToggle";
 
-installTraits(
+initObservus(
   {
     name: "stopwatch",
-    callback: (e: Element) => {
+    run: (e: Element) => {
       e.appendChild(Stopwatch());
     },
   },
   {
     name: "view-toggle-example",
-    callback: (e: Element) => {
+    run: (e: Element) => {
       e.appendChild(ViewToggle());
     },
   },
   {
     name: "todo-list-example",
-    callback: (e: Element) => {
+    run: (e: Element) => {
       e.appendChild(TodoList());
     },
   },
   {
     name: "text-input-example",
-    callback: (e: Element) => {
+    run: (e: Element) => {
       e.appendChild(TextInputExample());
     },
   },

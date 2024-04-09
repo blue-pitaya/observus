@@ -1,4 +1,4 @@
-import { Signal, mkState, signal } from "../../src/core";
+import { Signal, mkState, signal } from "../../src/observus";
 
 const a = mkState(10);
 

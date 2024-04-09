@@ -1,5 +1,4 @@
-import { mkElement, mkText } from "./dom";
-import { Signal, mkState } from "./core";
+import { Signal, mkElement, mkState, mkText } from "./observus";
 
 test("1", () => {
   const element = mkElement(

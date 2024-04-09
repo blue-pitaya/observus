@@ -1,5 +1,4 @@
-import { State, mkState } from "../src/core";
-import { mkText } from "../src/dom";
+import { State, mkState, mkText } from "../src/observus";
 import { button, div, input, li, s, span, ul } from "../src/tags";
 
 interface TodoItem {
