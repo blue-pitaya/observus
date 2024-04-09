@@ -9,8 +9,7 @@ export default defineConfig({
     outDir: "lib",
     lib: {
       entry: {
-        core: resolve(__dirname, "src/core.ts"),
-        dom: resolve(__dirname, "src/dom.ts"),
+        observus: resolve(__dirname, "src/observus.ts"),
         tags: resolve(__dirname, "src/tags.ts"),
         "svg-tags": resolve(__dirname, "src/svg-tags.ts"),
       },
