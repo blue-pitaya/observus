@@ -112,30 +112,9 @@ export function runAndObserve<A>(
 
 // DOM
 
-export interface ObservusTrait {
-  name: string;
-  run: (e: Element) => void;
-}
-
 export type ObAttrs = Record<string, any>;
 
 export type ObChildren = (Node | Signal<Node> | Signal<Node[]>)[];
-
-export function initObservus(...traits: ObservusTrait[]) {
-  const elements = document.querySelectorAll("[ob-use]");
-
-  console.log(elements);
-
-  elements.forEach((element) => {
-    const traitNames = (element.getAttribute("ob-use") ?? "").split(" ");
-    traitNames.forEach((traitName) => {
-      const trait = traits.find((v) => v.name == traitName);
-      if (trait) {
-        trait.run(element);
-      }
-    });
-  });
-}
 
 export function mkText(value: string | Signal<string>): Text {
   if (isSignal(value)) {
@@ -279,3 +258,27 @@ export function isSignal(v: any): v is Signal<any> {
     v.type == "Signal"
   );
 }
+
+// lol
+
+function install(name: string, fn: <A extends Element>(e: A) => void) {
+  const elements = document.querySelectorAll("[ob-use]");
+
+  elements.forEach((element) => {
+    const traits = (element.getAttribute("ob-use") ?? "").split(" ");
+
+    if (traits.find((x) => x == name)) {
+      try {
+        fn(element);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  });
+}
+
+const observus = {
+  install,
+};
+
+export default observus;
