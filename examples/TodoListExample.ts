@@ -1,4 +1,4 @@
-import { State, mkState, mkText } from "../src/observus";
+import { Signal, mkState, mkText } from "../src/observus";
 import { button, div, input, li, s, span, ul } from "../src/tags";
 
 interface TodoItem {
@@ -6,7 +6,7 @@ interface TodoItem {
   done: boolean;
 }
 
-function TodoItem(item: State<TodoItem>, remove: () => void): HTMLElement {
+function TodoItem(item: Signal<TodoItem>, remove: () => void): HTMLElement {
   return li(
     {},
     item.map((v) => {
@@ -32,7 +32,7 @@ function TodoItem(item: State<TodoItem>, remove: () => void): HTMLElement {
 }
 
 export function TodoList() {
-  const itemsState = mkState<Array<State<TodoItem>>>([]); // state can be nested
+  const itemsState = mkState<Array<Signal<TodoItem>>>([]); // state can be nested
 
   const x = input({ type: "text" });
 
