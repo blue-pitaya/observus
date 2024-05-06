@@ -1,4 +1,4 @@
-import { mkState, mkText } from "../src/observus";
+import { mkSignal, mkState, mkText } from "../src/observus";
 import { button, div, pre } from "../src/tags";
 
 export function Stopwatch() {
@@ -29,7 +29,7 @@ export function Stopwatch() {
       {
         style: "display: inline",
       },
-      mkText(elapsed.map((s) => `${s.toFixed(1)} seconds`)),
+      mkText(mkSignal(() => `${elapsed.value.toFixed(1)} seconds`, [elapsed])),
     ),
     button({ on_click: start }, mkText("Start")),
     button({ on_click: stop }, mkText("Stop")),

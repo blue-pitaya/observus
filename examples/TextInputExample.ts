@@ -1,4 +1,4 @@
-import { mkState, mkText } from "../src/observus";
+import { mkSignal, mkState, mkText } from "../src/observus";
 import { button, div, input, p } from "../src/tags";
 
 export function TextInputExample() {
@@ -7,10 +7,10 @@ export function TextInputExample() {
 
   return div(
     {},
-    p({}, mkText(textInputValue.map((v) => `Current value: ${v}`))),
+    p({}, mkText(mkSignal(() => `Current value: ${textInputValue.value}`, [textInputValue]))),
     input({
       type: "text",
-      value: textInputValue.signal(),
+      value: textInputValue,
       on_input: (e: any) => {
         textInputValue.set(e.target.value);
       },

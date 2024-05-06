@@ -1,4 +1,32 @@
-import { Signal, mkElement, mkState, mkText } from "./observus";
+import { lazyObserve, mkElement, mkSignal, mkState, mkText } from "./observus";
+
+test("lazy observe dont run callback on definition", () => {
+  let called = false;
+  const a = mkState(10);
+
+  lazyObserve(a, () => {
+    called = true;
+  });
+
+  expect(called).toBe(false);
+});
+
+test("callback tree test 1", () => {
+  const a = mkState("a");
+  const b = mkState("b");
+  const c = mkSignal([a, b], () => a.value + b.value + "c");
+  const d = mkState("d");
+  const e = mkSignal([c, d], () => c.value + d.value + "e");
+  const f = mkSignal([d], () => d.value + "f",);
+
+  console.log(a.value, b.value, c.value, d.value, e.value, f.value);
+  a.set("A");
+  console.log(a.value, b.value, c.value, d.value, e.value, f.value);
+  b.set("B");
+  console.log(a.value, b.value, c.value, d.value, e.value, f.value);
+});
+
+//test("huge amount of mapped signals wont throw stackoverflow", () => {})
 
 test("1", () => {
   const element = mkElement(
@@ -17,7 +45,7 @@ test("1", () => {
 test("2", () => {
   const classNameState = mkState("foo");
   const element = mkElement("div", {
-    className: classNameState.signal(),
+    className: classNameState,
   });
 
   expect(element.tagName).toBe("DIV");
@@ -85,7 +113,7 @@ test("boolean attributes are handled", () => {
 
 test("text signal as element blueprint works", () => {
   const text = mkState("foo");
-  const element = mkElement("div", {}, mkText(text.signal()));
+  const element = mkElement("div", {}, mkText(text));
 
   text.set("bar");
 
@@ -112,9 +140,9 @@ test("elements array signal works", () => {
   const signal = state.map((v) => {
     return v
       ? [
-          mkElement("p", {}, mkText("foo")),
-          mkElement("span", {}, mkText("bar")),
-        ]
+        mkElement("p", {}, mkText("foo")),
+        mkElement("span", {}, mkText("bar")),
+      ]
       : [mkElement("div", {}, mkText("baz"))];
   });
 
@@ -138,7 +166,7 @@ test("elements array signal works", () => {
 
 test("elements array signal with strings works", () => {
   const state = mkState(true);
-  const signal: Signal<Node[]> = state.map((v) => {
+  const signal = state.map((v) => {
     return v
       ? [mkElement("p", {}, mkText("foo")), mkText("bar")]
       : [mkElement("div", {}, mkText("baz"))];

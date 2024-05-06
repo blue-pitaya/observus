@@ -1,104 +1,108 @@
-//export interface State<A> {
-//  type: "State";
-//  value: A;
-//  observers: (() => void)[];
-//  set: (v: A) => void;
-//  map: <B>(f: (v: A) => B) => Signal<B>;
-//  signal: () => Signal<A>;
-//}
-//
-//export interface Signal<A> {
-//  type: "Signal";
-//  sources: State<any>[];
-//  getValue: () => A;
-//  map: <B>(f: (v: A) => B) => Signal<B>;
-//}
-
-export interface Source<A> {
-  type: "Source";
+export interface Signal<A> {
+  type: "Signal";
   value: A;
   observers: (() => void)[];
   set: (v: A) => void;
+  map<B>(fn: (v: A) => B): Signal<B>;
 }
 
-export interface Sink<A> {
-  type: "Sink";
-  value: () => A;
-  sources: Source<any>[];
-}
-
-export type FreeFn = () => void;
-
-function mkSource<A>(initialValue: A): Source<A> {
-  const source: Source<A> = {
-    type: "Source",
+export function mkState<A>(initialValue: A): Signal<A> {
+  const signal: Signal<A> = {
+    type: "Signal",
     value: initialValue,
     observers: [],
-    set: (nextValue: A) => {
-      source.value = nextValue;
-      source.observers.forEach((next) => next());
+    set: (v) => {
+      setFn(signal, v)
     },
-  };
-
-  return source;
-}
-
-function mkSink<A>(fn: () => A, deps: (Sink<any> | Source<any>)[]): Sink<A> {
-  return {
-    type: "Sink",
-    sources: deps.flatMap((x) => (x.type == "Source" ? [x] : x.sources)),
-    value: () => fn(),
-  };
-}
-
-function lazyObserve<A>(s: Source<A> | Sink<A>, next: (v: A) => void): FreeFn {
-  const sink: Sink<A> = s.type == "Source" ? mkSink<A>(() => s.value, [s]) : s;
-  const fn = () => next(sink.value());
-
-  sink.sources.forEach((source) => {
-    source.observers.push(fn);
-  });
-
-  return () => {
-    sink.sources.forEach((source) => {
-      source.observers = source.observers.filter((o) => o !== fn);
-    });
-  };
-}
-
-function observe<A>(s: Source<A> | Sink<A>, next: (v: A) => void): FreeFn {
-  const unobserve = lazyObserve(s, next);
-  if (s.type == "Source") {
-    next(s.value);
-  } else {
-    next(s.value());
+    map: (fn) => mkSignal(signal, () => fn(signal.value))
   }
 
-  return unobserve;
+  return signal;
 }
+
+export function mkSignal<A>(deps: Signal<any> | Signal<any>[], fn: () => A): Signal<A> {
+  const signal: Signal<A> = {
+    type: "Signal",
+    value: fn(),
+    observers: [],
+    set: (v: A) => {
+      setFn(signal, v)
+    },
+    map: (fn) => mkSignal(signal, () => fn(signal.value))
+  }
+
+
+  if (Array.isArray(deps)) {
+    deps.forEach(dep => {
+      dep.observers.push(() => {
+        signal.set(fn())
+      });
+    })
+  } else {
+    deps.observers.push(() => {
+      signal.set(fn())
+    });
+  }
+
+  return signal;
+}
+
+function setFn<A>(signal: Signal<A>, value: A) {
+  signal.value = value;
+  //TODO: use isDirty for mass updates
+  signal.observers.forEach(fn => {
+    fn();
+  })
+}
+
+export function lazyObserve(deps: Signal<any> | Signal<any>[], fn: () => void) {
+  if (Array.isArray(deps)) {
+    deps.forEach(d => {
+      d.observers.push(fn);
+    })
+  } else {
+    deps.observers.push(fn);
+  }
+}
+
+export function observe(deps: Signal<any> | Signal<any>[], fn: () => void) {
+  lazyObserve(deps, fn);
+  fn();
+}
+
+export function isSignal(v: any): v is Signal<any> {
+  return (
+    v !== undefined &&
+    v !== null &&
+    typeof v === "object" &&
+    "type" in v &&
+    v.type == "Signal"
+  );
+}
+
 
 // DOM
 
 export type ObAttrs = Record<string, any>;
 
-export type ObChildren = (Node | Sink<Node> | Sink<Node[]>)[];
+export type ObChildren = (Node | Signal<any> | Signal<any[]>)[];
 
-//TODO: add SOurce<string> handling
-function mkText(value: string | Sink<string>): Text {
-  if (isSink(value)) {
-    const node = document.createTextNode(value.value());
+export function mkText(value: string | Signal<string>): Text {
+  if (typeof value === "object") {
+    const node = document.createTextNode(value.value);
 
-    observe(value, (v) => {
-      node.textContent = v;
+    observe(value, () => {
+      node.textContent = value.value;
     });
 
     return node;
   }
 
   return document.createTextNode(value);
+
 }
 
-function mkElement<K extends keyof HTMLElementTagNameMap>(
+export function mkElement<K extends keyof HTMLElementTagNameMap>(
   tagName: K,
   attrs: ObAttrs,
   ...children: ObChildren
@@ -106,7 +110,7 @@ function mkElement<K extends keyof HTMLElementTagNameMap>(
   return build(document.createElement(tagName), attrs, ...children);
 }
 
-function mkSvgElement<K extends keyof SVGElementTagNameMap>(
+export function mkSvgElement<K extends keyof SVGElementTagNameMap>(
   tagName: K,
   attrs: ObAttrs,
   ...children: ObChildren
@@ -118,12 +122,12 @@ function mkSvgElement<K extends keyof SVGElementTagNameMap>(
   );
 }
 
-function build<A extends Element>(
+export function build<A extends Element>(
   element: A,
   attrs: ObAttrs,
   ...children: ObChildren
 ): A {
-  let onCreated = (_: A) => {};
+  let onCreated = (_: A) => { };
 
   Object.keys(attrs).forEach((attrKey) => {
     function setAttr(v: any) {
@@ -134,9 +138,9 @@ function build<A extends Element>(
 
     const attrValue = attrs[attrKey];
 
-    if (isSink(attrValue)) {
-      observe(attrValue, (value) => {
-        setAttr(value);
+    if (isSignal(attrValue)) {
+      observe(attrValue, () => {
+        setAttr(attrValue.value);
       });
       return;
     }
@@ -156,51 +160,54 @@ function build<A extends Element>(
   });
 
   children.forEach((child) => {
-    if (isSink(child)) {
-      if (Array.isArray(child.value())) {
-        //Signal<Node[]>
-        const nodesSignal = child as Sink<Node[]>;
+    if (!isSignal(child)) {
+      element.appendChild(child as Node);
+      return;
+    }
 
-        let lastElements: Node[] | null = null;
-        const elementsStartIndex = element.childNodes.length;
+    if (Array.isArray(child.value)) {
+      //Signal<Node[]>
+      const nodesSignal = child as Signal<Node[]>;
 
-        observe(nodesSignal, (els) => {
-          if (lastElements !== null) {
-            const childNodes = [...element.childNodes];
-            childNodes.splice(
-              elementsStartIndex,
-              lastElements.length,
-              //TODO: is it safe?
-              ...(els as ChildNode[]),
-            );
-            element.replaceChildren(...childNodes);
-          } else {
-            els.forEach((el) => {
-              element.appendChild(el);
-            });
-          }
+      let lastElements: Node[] | null = null;
+      const elementsStartIndex = element.childNodes.length;
 
-          lastElements = els;
-        });
-
-        return;
-      } else {
-        //Signal<Node>
-        const nodeSignal = child as Sink<Node>;
-
-        let lastElement: Node | null = null;
-        observe(nodeSignal, (el: Node) => {
-          if (lastElement !== null) {
-            element.replaceChild(el, lastElement);
-          } else {
+      observe(nodesSignal, () => {
+        const els = nodesSignal.value;
+        if (lastElements !== null) {
+          const childNodes = [...element.childNodes];
+          childNodes.splice(
+            elementsStartIndex,
+            lastElements.length,
+            //TODO: is it safe?
+            ...(els as ChildNode[]),
+          );
+          element.replaceChildren(...childNodes);
+        } else {
+          els.forEach((el) => {
             element.appendChild(el);
-          }
+          });
+        }
 
-          lastElement = el;
-        });
-      }
+        lastElements = els;
+      });
+
+      return;
     } else {
-      element.appendChild(child);
+      //Signal<Node>
+      const nodeSignal = child as Signal<Node>;
+
+      let lastElement: Node | null = null;
+      observe(nodeSignal, () => {
+        const el = nodeSignal.value;
+        if (lastElement !== null) {
+          element.replaceChild(el, lastElement);
+        } else {
+          element.appendChild(el);
+        }
+
+        lastElement = el;
+      });
     }
   });
 
@@ -209,17 +216,7 @@ function build<A extends Element>(
   return element;
 }
 
-function isSink(v: any): v is Sink<any> {
-  return (
-    v !== undefined &&
-    v !== null &&
-    typeof v === "object" &&
-    "type" in v &&
-    v.type == "Sink"
-  );
-}
-
-function install(name: string, fn: <A extends Element>(e: A) => void) {
+export function install(name: string, fn: <A extends Element>(e: A) => void) {
   const elements = document.querySelectorAll("[ob-use]");
 
   elements.forEach((element) => {
@@ -234,17 +231,3 @@ function install(name: string, fn: <A extends Element>(e: A) => void) {
     }
   });
 }
-
-const observus = {
-  mkSource,
-  mkSink,
-  lazyObserve,
-  observe,
-  mkText,
-  mkElement,
-  mkSvgElement,
-  build,
-  install,
-};
-
-export default observus;
