@@ -26,6 +26,11 @@
       "require": "./lib/observus.cjs",
       "types": "./lib/observus.d.ts"
     },
+    "./helpers": {
+      "import": "./lib/helpers.js",
+      "require": "./lib/helpers.cjs",
+      "types": "./lib/helpers.d.ts"
+    },
     "./tags": {
       "import": "./lib/tags.js",
       "require": "./lib/tags.cjs",

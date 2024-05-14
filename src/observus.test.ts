@@ -1,10 +1,10 @@
-import { lazyObserve, mkElement, mkSignal, mkState, mkText } from "./observus";
+import { mkElement, mkSignal, mkState, mkText, observeLazy } from "./observus";
 
 test("lazy observe dont run callback on definition", () => {
   let called = false;
   const a = mkState(10);
 
-  lazyObserve(a, () => {
+  observeLazy(a, () => {
     called = true;
   });
 

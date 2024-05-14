@@ -12,35 +12,37 @@ export function mkState<A>(initialValue: A): Signal<A> {
     value: initialValue,
     observers: [],
     set: (v) => {
-      setFn(signal, v)
+      setFn(signal, v);
     },
-    map: (fn) => mkSignal(signal, () => fn(signal.value))
-  }
+    map: (fn) => mkSignal(signal, () => fn(signal.value)),
+  };
 
   return signal;
 }
 
-export function mkSignal<A>(deps: Signal<any> | Signal<any>[], fn: () => A): Signal<A> {
+export function mkSignal<A>(
+  deps: Signal<any> | Signal<any>[],
+  fn: () => A,
+): Signal<A> {
   const signal: Signal<A> = {
     type: "Signal",
     value: fn(),
     observers: [],
     set: (v: A) => {
-      setFn(signal, v)
+      setFn(signal, v);
     },
-    map: (fn) => mkSignal(signal, () => fn(signal.value))
-  }
-
+    map: (fn) => mkSignal(signal, () => fn(signal.value)),
+  };
 
   if (Array.isArray(deps)) {
-    deps.forEach(dep => {
+    deps.forEach((dep) => {
       dep.observers.push(() => {
-        signal.set(fn())
+        signal.set(fn());
       });
-    })
+    });
   } else {
     deps.observers.push(() => {
-      signal.set(fn())
+      signal.set(fn());
     });
   }
 
@@ -50,24 +52,30 @@ export function mkSignal<A>(deps: Signal<any> | Signal<any>[], fn: () => A): Sig
 function setFn<A>(signal: Signal<A>, value: A) {
   signal.value = value;
   //TODO: use isDirty for mass updates
-  signal.observers.forEach(fn => {
+  signal.observers.forEach((fn) => {
     fn();
-  })
+  });
 }
 
-export function lazyObserve(deps: Signal<any> | Signal<any>[], fn: () => void) {
+//TODO: should return freeFN
+export function observeLazy(deps: Signal<any> | Signal<any>[], fn: () => void) {
   if (Array.isArray(deps)) {
-    deps.forEach(d => {
+    deps.forEach((d) => {
       d.observers.push(fn);
-    })
+    });
   } else {
     deps.observers.push(fn);
   }
 }
 
 export function observe(deps: Signal<any> | Signal<any>[], fn: () => void) {
-  lazyObserve(deps, fn);
+  observeLazy(deps, fn);
   fn();
+}
+
+export function updateInPlace<A>(signal: Signal<A>, fn: (value: A) => void) {
+  fn(signal.value);
+  signal.set(signal.value);
 }
 
 export function isSignal(v: any): v is Signal<any> {
@@ -79,7 +87,6 @@ export function isSignal(v: any): v is Signal<any> {
     v.type == "Signal"
   );
 }
-
 
 // DOM
 
@@ -99,7 +106,6 @@ export function mkText(value: string | Signal<string>): Text {
   }
 
   return document.createTextNode(value);
-
 }
 
 export function mkElement<K extends keyof HTMLElementTagNameMap>(
@@ -107,7 +113,7 @@ export function mkElement<K extends keyof HTMLElementTagNameMap>(
   attrs: ObAttrs,
   ...children: ObChildren
 ): HTMLElementTagNameMap[K] {
-  return build(document.createElement(tagName), attrs, ...children);
+  return bind(document.createElement(tagName), attrs, ...children);
 }
 
 export function mkSvgElement<K extends keyof SVGElementTagNameMap>(
@@ -115,19 +121,19 @@ export function mkSvgElement<K extends keyof SVGElementTagNameMap>(
   attrs: ObAttrs,
   ...children: ObChildren
 ): SVGElementTagNameMap[K] {
-  return build(
+  return bind(
     document.createElementNS("http://www.w3.org/2000/svg", tagName),
     attrs,
     ...children,
   );
 }
 
-export function build<A extends Element>(
+export function bind<A extends Element>(
   element: A,
   attrs: ObAttrs,
   ...children: ObChildren
 ): A {
-  let onCreated = (_: A) => { };
+  let onCreated = (_: A) => {};
 
   Object.keys(attrs).forEach((attrKey) => {
     function setAttr(v: any) {
