@@ -1,131 +1,120 @@
-import { ObChildren, ObAttrs, mkElement } from "./observus";
-
 //Tags from typescript DOM lib 5.2.2 (typescript/lib/lib.dom.d.ts)
 
-type A = ObAttrs;
-type C = ObChildren;
+import { ObSetter, mkElement } from "./dom";
 
-export const a = (attrs: A, ...c: C) => mkElement("a", attrs, ...c); //HTMLAnchorElement
-export const abbr = (attrs: A, ...c: C) => mkElement("abbr", attrs, ...c); //HTMLElement
-export const address = (attrs: A, ...c: C) => mkElement("address", attrs, ...c); //HTMLElement
-export const area = (attrs: A, ...c: C) => mkElement("area", attrs, ...c); //HTMLAreaElement
-export const article = (attrs: A, ...c: C) => mkElement("article", attrs, ...c); //HTMLElement
-export const aside = (attrs: A, ...c: C) => mkElement("aside", attrs, ...c); //HTMLElement
-export const audio = (attrs: A, ...c: C) => mkElement("audio", attrs, ...c); //HTMLAudioElement
-export const b = (attrs: A, ...c: C) => mkElement("b", attrs, ...c); //HTMLElement
-export const base = (attrs: A, ...c: C) => mkElement("base", attrs, ...c); //HTMLBaseElement
-export const bdi = (attrs: A, ...c: C) => mkElement("bdi", attrs, ...c); //HTMLElement
-export const bdo = (attrs: A, ...c: C) => mkElement("bdo", attrs, ...c); //HTMLElement
-export const blockquote = (attrs: A, ...c: C) =>
-  mkElement("blockquote", attrs, ...c); //HTMLQuoteElement
-export const body = (attrs: A, ...c: C) => mkElement("body", attrs, ...c); //HTMLBodyElement
-export const br = (attrs: A, ...c: C) => mkElement("br", attrs, ...c); //HTMLBRElement
-export const button = (attrs: A, ...c: C) => mkElement("button", attrs, ...c); //HTMLButtonElement
-export const canvas = (attrs: A, ...c: C) => mkElement("canvas", attrs, ...c); //HTMLCanvasElement
-export const caption = (attrs: A, ...c: C) => mkElement("caption", attrs, ...c); //HTMLTableCaptionElement
-export const cite = (attrs: A, ...c: C) => mkElement("cite", attrs, ...c); //HTMLElement
-export const code = (attrs: A, ...c: C) => mkElement("code", attrs, ...c); //HTMLElement
-export const col = (attrs: A, ...c: C) => mkElement("col", attrs, ...c); //HTMLTableColElement
-export const colgroup = (attrs: A, ...c: C) =>
-  mkElement("colgroup", attrs, ...c); //HTMLTableColElement
-export const data = (attrs: A, ...c: C) => mkElement("data", attrs, ...c); //HTMLDataElement
-export const datalist = (attrs: A, ...c: C) =>
-  mkElement("datalist", attrs, ...c); //HTMLDataListElement
-export const dd = (attrs: A, ...c: C) => mkElement("dd", attrs, ...c); //HTMLElement
-export const del = (attrs: A, ...c: C) => mkElement("del", attrs, ...c); //HTMLModElement
-export const details = (attrs: A, ...c: C) => mkElement("details", attrs, ...c); //HTMLDetailsElement
-export const dfn = (attrs: A, ...c: C) => mkElement("dfn", attrs, ...c); //HTMLElement
-export const dialog = (attrs: A, ...c: C) => mkElement("dialog", attrs, ...c); //HTMLDialogElement
-export const div = (attrs: A, ...c: C) => mkElement("div", attrs, ...c); //HTMLDivElement
-export const dl = (attrs: A, ...c: C) => mkElement("dl", attrs, ...c); //HTMLDListElement
-export const dt = (attrs: A, ...c: C) => mkElement("dt", attrs, ...c); //HTMLElement
-export const em = (attrs: A, ...c: C) => mkElement("em", attrs, ...c); //HTMLElement
-export const embed = (attrs: A, ...c: C) => mkElement("embed", attrs, ...c); //HTMLEmbedElement
-export const fieldset = (attrs: A, ...c: C) =>
-  mkElement("fieldset", attrs, ...c); //HTMLFieldSetElement
-export const figcaption = (attrs: A, ...c: C) =>
-  mkElement("figcaption", attrs, ...c); //HTMLElement
-export const figure = (attrs: A, ...c: C) => mkElement("figure", attrs, ...c); //HTMLElement
-export const footer = (attrs: A, ...c: C) => mkElement("footer", attrs, ...c); //HTMLElement
-export const form = (attrs: A, ...c: C) => mkElement("form", attrs, ...c); //HTMLFormElement
-export const h1 = (attrs: A, ...c: C) => mkElement("h1", attrs, ...c); //HTMLHeadingElement
-export const h2 = (attrs: A, ...c: C) => mkElement("h2", attrs, ...c); //HTMLHeadingElement
-export const h3 = (attrs: A, ...c: C) => mkElement("h3", attrs, ...c); //HTMLHeadingElement
-export const h4 = (attrs: A, ...c: C) => mkElement("h4", attrs, ...c); //HTMLHeadingElement
-export const h5 = (attrs: A, ...c: C) => mkElement("h5", attrs, ...c); //HTMLHeadingElement
-export const h6 = (attrs: A, ...c: C) => mkElement("h6", attrs, ...c); //HTMLHeadingElement
-export const head = (attrs: A, ...c: C) => mkElement("head", attrs, ...c); //HTMLHeadElement
-export const header = (attrs: A, ...c: C) => mkElement("header", attrs, ...c); //HTMLElement
-export const hgroup = (attrs: A, ...c: C) => mkElement("hgroup", attrs, ...c); //HTMLElement
-export const hr = (attrs: A, ...c: C) => mkElement("hr", attrs, ...c); //HTMLHRElement
-export const html = (attrs: A, ...c: C) => mkElement("html", attrs, ...c); //HTMLHtmlElement
-export const i = (attrs: A, ...c: C) => mkElement("i", attrs, ...c); //HTMLElement
-export const iframe = (attrs: A, ...c: C) => mkElement("iframe", attrs, ...c); //HTMLIFrameElement
-export const img = (attrs: A, ...c: C) => mkElement("img", attrs, ...c); //HTMLImageElement
-export const input = (attrs: A, ...c: C) => mkElement("input", attrs, ...c); //HTMLInputElement
-export const ins = (attrs: A, ...c: C) => mkElement("ins", attrs, ...c); //HTMLModElement
-export const kbd = (attrs: A, ...c: C) => mkElement("kbd", attrs, ...c); //HTMLElement
-export const label = (attrs: A, ...c: C) => mkElement("label", attrs, ...c); //HTMLLabelElement
-export const legend = (attrs: A, ...c: C) => mkElement("legend", attrs, ...c); //HTMLLegendElement
-export const li = (attrs: A, ...c: C) => mkElement("li", attrs, ...c); //HTMLLIElement
-export const link = (attrs: A, ...c: C) => mkElement("link", attrs, ...c); //HTMLLinkElement
-export const main = (attrs: A, ...c: C) => mkElement("main", attrs, ...c); //HTMLElement
-export const map = (attrs: A, ...c: C) => mkElement("map", attrs, ...c); //HTMLMapElement
-export const mark = (attrs: A, ...c: C) => mkElement("mark", attrs, ...c); //HTMLElement
-export const menu = (attrs: A, ...c: C) => mkElement("menu", attrs, ...c); //HTMLMenuElement
-export const meta = (attrs: A, ...c: C) => mkElement("meta", attrs, ...c); //HTMLMetaElement
-export const meter = (attrs: A, ...c: C) => mkElement("meter", attrs, ...c); //HTMLMeterElement
-export const nav = (attrs: A, ...c: C) => mkElement("nav", attrs, ...c); //HTMLElement
-export const noscript = (attrs: A, ...c: C) =>
-  mkElement("noscript", attrs, ...c); //HTMLElement
-export const object = (attrs: A, ...c: C) => mkElement("object", attrs, ...c); //HTMLObjectElement
-export const ol = (attrs: A, ...c: C) => mkElement("ol", attrs, ...c); //HTMLOListElement
-export const optgroup = (attrs: A, ...c: C) =>
-  mkElement("optgroup", attrs, ...c); //HTMLOptGroupElement
-export const option = (attrs: A, ...c: C) => mkElement("option", attrs, ...c); //HTMLOptionElement
-export const output = (attrs: A, ...c: C) => mkElement("output", attrs, ...c); //HTMLOutputElement
-export const p = (attrs: A, ...c: C) => mkElement("p", attrs, ...c); //HTMLParagraphElement
-export const picture = (attrs: A, ...c: C) => mkElement("picture", attrs, ...c); //HTMLPictureElement
-export const pre = (attrs: A, ...c: C) => mkElement("pre", attrs, ...c); //HTMLPreElement
-export const progress = (attrs: A, ...c: C) =>
-  mkElement("progress", attrs, ...c); //HTMLProgressElement
-export const q = (attrs: A, ...c: C) => mkElement("q", attrs, ...c); //HTMLQuoteElement
-export const rp = (attrs: A, ...c: C) => mkElement("rp", attrs, ...c); //HTMLElement
-export const rt = (attrs: A, ...c: C) => mkElement("rt", attrs, ...c); //HTMLElement
-export const ruby = (attrs: A, ...c: C) => mkElement("ruby", attrs, ...c); //HTMLElement
-export const s = (attrs: A, ...c: C) => mkElement("s", attrs, ...c); //HTMLElement
-export const samp = (attrs: A, ...c: C) => mkElement("samp", attrs, ...c); //HTMLElement
-export const script = (attrs: A, ...c: C) => mkElement("script", attrs, ...c); //HTMLScriptElement
-export const search = (attrs: A, ...c: C) => mkElement("search", attrs, ...c); //HTMLElement
-export const section = (attrs: A, ...c: C) => mkElement("section", attrs, ...c); //HTMLElement
-export const select = (attrs: A, ...c: C) => mkElement("select", attrs, ...c); //HTMLSelectElement
-export const slot = (attrs: A, ...c: C) => mkElement("slot", attrs, ...c); //HTMLSlotElement
-export const small = (attrs: A, ...c: C) => mkElement("small", attrs, ...c); //HTMLElement
-export const source = (attrs: A, ...c: C) => mkElement("source", attrs, ...c); //HTMLSourceElement
-export const span = (attrs: A, ...c: C) => mkElement("span", attrs, ...c); //HTMLSpanElement
-export const strong = (attrs: A, ...c: C) => mkElement("strong", attrs, ...c); //HTMLElement
+type C = ObSetter[];
+
+export const a = (...c: C) => mkElement("a", ...c); //HTMLAnchorElement
+export const abbr = (...c: C) => mkElement("abbr", ...c); //HTMLElement
+export const address = (...c: C) => mkElement("address", ...c); //HTMLElement
+export const area = (...c: C) => mkElement("area", ...c); //HTMLAreaElement
+export const article = (...c: C) => mkElement("article", ...c); //HTMLElement
+export const aside = (...c: C) => mkElement("aside", ...c); //HTMLElement
+export const audio = (...c: C) => mkElement("audio", ...c); //HTMLAudioElement
+export const b = (...c: C) => mkElement("b", ...c); //HTMLElement
+export const base = (...c: C) => mkElement("base", ...c); //HTMLBaseElement
+export const bdi = (...c: C) => mkElement("bdi", ...c); //HTMLElement
+export const bdo = (...c: C) => mkElement("bdo", ...c); //HTMLElement
+export const blockquote = (...c: C) => mkElement("blockquote", ...c); //HTMLQuoteElement
+export const body = (...c: C) => mkElement("body", ...c); //HTMLBodyElement
+export const br = (...c: C) => mkElement("br", ...c); //HTMLBRElement
+export const button = (...c: C) => mkElement("button", ...c); //HTMLButtonElement
+export const canvas = (...c: C) => mkElement("canvas", ...c); //HTMLCanvasElement
+export const caption = (...c: C) => mkElement("caption", ...c); //HTMLTableCaptionElement
+export const cite = (...c: C) => mkElement("cite", ...c); //HTMLElement
+export const code = (...c: C) => mkElement("code", ...c); //HTMLElement
+export const col = (...c: C) => mkElement("col", ...c); //HTMLTableColElement
+export const colgroup = (...c: C) => mkElement("colgroup", ...c); //HTMLTableColElement
+export const data = (...c: C) => mkElement("data", ...c); //HTMLDataElement
+export const datalist = (...c: C) => mkElement("datalist", ...c); //HTMLDataListElement
+export const dd = (...c: C) => mkElement("dd", ...c); //HTMLElement
+export const del = (...c: C) => mkElement("del", ...c); //HTMLModElement
+export const details = (...c: C) => mkElement("details", ...c); //HTMLDetailsElement
+export const dfn = (...c: C) => mkElement("dfn", ...c); //HTMLElement
+export const dialog = (...c: C) => mkElement("dialog", ...c); //HTMLDialogElement
+export const div = (...c: C) => mkElement("div", ...c); //HTMLDivElement
+export const dl = (...c: C) => mkElement("dl", ...c); //HTMLDListElement
+export const dt = (...c: C) => mkElement("dt", ...c); //HTMLElement
+export const em = (...c: C) => mkElement("em", ...c); //HTMLElement
+export const embed = (...c: C) => mkElement("embed", ...c); //HTMLEmbedElement
+export const fieldset = (...c: C) => mkElement("fieldset", ...c); //HTMLFieldSetElement
+export const figcaption = (...c: C) => mkElement("figcaption", ...c); //HTMLElement
+export const figure = (...c: C) => mkElement("figure", ...c); //HTMLElement
+export const footer = (...c: C) => mkElement("footer", ...c); //HTMLElement
+export const form = (...c: C) => mkElement("form", ...c); //HTMLFormElement
+export const h1 = (...c: C) => mkElement("h1", ...c); //HTMLHeadingElement
+export const h2 = (...c: C) => mkElement("h2", ...c); //HTMLHeadingElement
+export const h3 = (...c: C) => mkElement("h3", ...c); //HTMLHeadingElement
+export const h4 = (...c: C) => mkElement("h4", ...c); //HTMLHeadingElement
+export const h5 = (...c: C) => mkElement("h5", ...c); //HTMLHeadingElement
+export const h6 = (...c: C) => mkElement("h6", ...c); //HTMLHeadingElement
+export const head = (...c: C) => mkElement("head", ...c); //HTMLHeadElement
+export const header = (...c: C) => mkElement("header", ...c); //HTMLElement
+export const hgroup = (...c: C) => mkElement("hgroup", ...c); //HTMLElement
+export const hr = (...c: C) => mkElement("hr", ...c); //HTMLHRElement
+export const html = (...c: C) => mkElement("html", ...c); //HTMLHtmlElement
+export const i = (...c: C) => mkElement("i", ...c); //HTMLElement
+export const iframe = (...c: C) => mkElement("iframe", ...c); //HTMLIFrameElement
+export const img = (...c: C) => mkElement("img", ...c); //HTMLImageElement
+export const input = (...c: C) => mkElement("input", ...c); //HTMLInputElement
+export const ins = (...c: C) => mkElement("ins", ...c); //HTMLModElement
+export const kbd = (...c: C) => mkElement("kbd", ...c); //HTMLElement
+export const label = (...c: C) => mkElement("label", ...c); //HTMLLabelElement
+export const legend = (...c: C) => mkElement("legend", ...c); //HTMLLegendElement
+export const li = (...c: C) => mkElement("li", ...c); //HTMLLIElement
+export const link = (...c: C) => mkElement("link", ...c); //HTMLLinkElement
+export const main = (...c: C) => mkElement("main", ...c); //HTMLElement
+export const map = (...c: C) => mkElement("map", ...c); //HTMLMapElement
+export const mark = (...c: C) => mkElement("mark", ...c); //HTMLElement
+export const menu = (...c: C) => mkElement("menu", ...c); //HTMLMenuElement
+export const meta = (...c: C) => mkElement("meta", ...c); //HTMLMetaElement
+export const meter = (...c: C) => mkElement("meter", ...c); //HTMLMeterElement
+export const nav = (...c: C) => mkElement("nav", ...c); //HTMLElement
+export const noscript = (...c: C) => mkElement("noscript", ...c); //HTMLElement
+export const object = (...c: C) => mkElement("object", ...c); //HTMLObjectElement
+export const ol = (...c: C) => mkElement("ol", ...c); //HTMLOListElement
+export const optgroup = (...c: C) => mkElement("optgroup", ...c); //HTMLOptGroupElement
+export const option = (...c: C) => mkElement("option", ...c); //HTMLOptionElement
+export const output = (...c: C) => mkElement("output", ...c); //HTMLOutputElement
+export const p = (...c: C) => mkElement("p", ...c); //HTMLParagraphElement
+export const picture = (...c: C) => mkElement("picture", ...c); //HTMLPictureElement
+export const pre = (...c: C) => mkElement("pre", ...c); //HTMLPreElement
+export const progress = (...c: C) => mkElement("progress", ...c); //HTMLProgressElement
+export const q = (...c: C) => mkElement("q", ...c); //HTMLQuoteElement
+export const rp = (...c: C) => mkElement("rp", ...c); //HTMLElement
+export const rt = (...c: C) => mkElement("rt", ...c); //HTMLElement
+export const ruby = (...c: C) => mkElement("ruby", ...c); //HTMLElement
+export const s = (...c: C) => mkElement("s", ...c); //HTMLElement
+export const samp = (...c: C) => mkElement("samp", ...c); //HTMLElement
+export const script = (...c: C) => mkElement("script", ...c); //HTMLScriptElement
+export const search = (...c: C) => mkElement("search", ...c); //HTMLElement
+export const section = (...c: C) => mkElement("section", ...c); //HTMLElement
+export const select = (...c: C) => mkElement("select", ...c); //HTMLSelectElement
+export const slot = (...c: C) => mkElement("slot", ...c); //HTMLSlotElement
+export const small = (...c: C) => mkElement("small", ...c); //HTMLElement
+export const source = (...c: C) => mkElement("source", ...c); //HTMLSourceElement
+export const span = (...c: C) => mkElement("span", ...c); //HTMLSpanElement
+export const strong = (...c: C) => mkElement("strong", ...c); //HTMLElement
 // added "Tag" suffix to avoid confusion with commonly used "style" attribute
-export const styleTag = (attrs: A, ...c: C) => mkElement("style", attrs, ...c); //HTMLStyleElement
-export const sub = (attrs: A, ...c: C) => mkElement("sub", attrs, ...c); //HTMLElement
-export const summary = (attrs: A, ...c: C) => mkElement("summary", attrs, ...c); //HTMLElement
-export const sup = (attrs: A, ...c: C) => mkElement("sup", attrs, ...c); //HTMLElement
-export const table = (attrs: A, ...c: C) => mkElement("table", attrs, ...c); //HTMLTableElement
-export const tbody = (attrs: A, ...c: C) => mkElement("tbody", attrs, ...c); //HTMLTableSectionElement
-export const td = (attrs: A, ...c: C) => mkElement("td", attrs, ...c); //HTMLTableCellElement
-export const template = (attrs: A, ...c: C) =>
-  mkElement("template", attrs, ...c); //HTMLTemplateElement
-export const textarea = (attrs: A, ...c: C) =>
-  mkElement("textarea", attrs, ...c); //HTMLTextAreaElement
-export const tfoot = (attrs: A, ...c: C) => mkElement("tfoot", attrs, ...c); //HTMLTableSectionElement
-export const th = (attrs: A, ...c: C) => mkElement("th", attrs, ...c); //HTMLTableCellElement
-export const thead = (attrs: A, ...c: C) => mkElement("thead", attrs, ...c); //HTMLTableSectionElement
-export const time = (attrs: A, ...c: C) => mkElement("time", attrs, ...c); //HTMLTimeElement
-export const title = (attrs: A, ...c: C) => mkElement("title", attrs, ...c); //HTMLTitleElement
-export const tr = (attrs: A, ...c: C) => mkElement("tr", attrs, ...c); //HTMLTableRowElement
-export const track = (attrs: A, ...c: C) => mkElement("track", attrs, ...c); //HTMLTrackElement
-export const u = (attrs: A, ...c: C) => mkElement("u", attrs, ...c); //HTMLElement
-export const ul = (attrs: A, ...c: C) => mkElement("ul", attrs, ...c); //HTMLUListElement
+export const styleTag = (...c: C) => mkElement("style", ...c); //HTMLStyleElement
+export const sub = (...c: C) => mkElement("sub", ...c); //HTMLElement
+export const summary = (...c: C) => mkElement("summary", ...c); //HTMLElement
+export const sup = (...c: C) => mkElement("sup", ...c); //HTMLElement
+export const table = (...c: C) => mkElement("table", ...c); //HTMLTableElement
+export const tbody = (...c: C) => mkElement("tbody", ...c); //HTMLTableSectionElement
+export const td = (...c: C) => mkElement("td", ...c); //HTMLTableCellElement
+export const template = (...c: C) => mkElement("template", ...c); //HTMLTemplateElement
+export const textarea = (...c: C) => mkElement("textarea", ...c); //HTMLTextAreaElement
+export const tfoot = (...c: C) => mkElement("tfoot", ...c); //HTMLTableSectionElement
+export const th = (...c: C) => mkElement("th", ...c); //HTMLTableCellElement
+export const thead = (...c: C) => mkElement("thead", ...c); //HTMLTableSectionElement
+export const time = (...c: C) => mkElement("time", ...c); //HTMLTimeElement
+export const title = (...c: C) => mkElement("title", ...c); //HTMLTitleElement
+export const tr = (...c: C) => mkElement("tr", ...c); //HTMLTableRowElement
+export const track = (...c: C) => mkElement("track", ...c); //HTMLTrackElement
+export const u = (...c: C) => mkElement("u", ...c); //HTMLElement
+export const ul = (...c: C) => mkElement("ul", ...c); //HTMLUListElement
 // added "Tag" suffix to avoid conflict with TS keyword
-export const varTag = (attrs: A, ...c: C) => mkElement("var", attrs, ...c); //HTMLElement
-export const video = (attrs: A, ...c: C) => mkElement("video", attrs, ...c); //HTMLVideoElement
-export const wbr = (attrs: A, ...c: C) => mkElement("wbr", attrs, ...c); //HTMLElement
+export const varTag = (...c: C) => mkElement("var", ...c); //HTMLElement
+export const video = (...c: C) => mkElement("video", ...c); //HTMLVideoElement
+export const wbr = (...c: C) => mkElement("wbr", ...c); //HTMLElement

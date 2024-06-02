@@ -1,5 +1,6 @@
+import { mkElement, mkText } from "./dom";
 import { lazyElementsSignal } from "./helpers";
-import { Signal, mkElement, mkState, mkText, updateInPlace } from "./observus";
+import { Signal, mkState, notify } from "./observus";
 
 interface SomeItem {
   id: string;
@@ -12,16 +13,16 @@ test("lazyElementsSignal dont change elements when original signal is changed, w
     { id: "2", value: "two" },
   ]);
   const createElement = (item: SomeItem) => {
-    return mkElement("span", {}, mkText(item.value));
+    return mkElement("span", mkText(item.value));
   };
   const elements = lazyElementsSignal(items, (item) => item.id, createElement);
-  const myDiv = mkElement("div", {}, elements);
+  const myDiv = mkElement("div", elements);
 
   const expected = "<div><span>one</span><span>two</span></div>";
 
   expect(myDiv.outerHTML).toBe(expected);
 
-  updateInPlace(items, () => {
+  notify(items, () => {
     items.value[0].value = "ONE";
   });
 
@@ -40,14 +41,14 @@ test("lazyElementsSignal handles nested signals", () => {
     { id: "2", value: mkState("two") },
   ]);
   const createElement = (item: SomeDynItem) => {
-    return mkElement("span", {}, mkText(item.value));
+    return mkElement("span", mkText(item.value));
   };
   const elements = lazyElementsSignal(items, (item) => item.id, createElement);
-  const myDiv = mkElement("div", {}, elements);
+  const myDiv = mkElement("div", elements);
 
   expect(myDiv.outerHTML).toBe("<div><span>one</span><span>two</span></div>");
 
-  updateInPlace(items, () => {
+  notify(items, () => {
     items.value[0].value.set("ONE");
   });
 
@@ -60,16 +61,16 @@ test("lazyElemenSignal should change elements signal on list key change", () => 
     { id: "2", value: "two" },
   ]);
   const createElement = (item: SomeItem) => {
-    return mkElement("span", {}, mkText(item.value));
+    return mkElement("span", mkText(item.value));
   };
   const elements = lazyElementsSignal(items, (item) => item.id, createElement);
-  const myDiv = mkElement("div", {}, elements);
+  const myDiv = mkElement("div", elements);
 
   const expected = "<div><span>one</span><span>two</span></div>";
 
   expect(myDiv.outerHTML).toBe(expected);
 
-  updateInPlace(items, () => {
+  notify(items, () => {
     items.value.push({
       id: "3",
       value: "three",

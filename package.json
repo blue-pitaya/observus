@@ -26,6 +26,11 @@
       "require": "./lib/observus.cjs",
       "types": "./lib/observus.d.ts"
     },
+    "./dom": {
+      "import": "./lib/dom.js",
+      "require": "./lib/dom.cjs",
+      "types": "./lib/dom.d.ts"
+    },
     "./helpers": {
       "import": "./lib/helpers.js",
       "require": "./lib/helpers.cjs",

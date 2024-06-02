@@ -1,4 +1,5 @@
-import { mkState, mkText } from "../src/observus";
+import { _attrs, _ref, mkText } from "../src/dom";
+import { mkState } from "../src/observus";
 import { button, div, pre } from "../src/tags";
 
 export function Stopwatch() {
@@ -24,15 +25,29 @@ export function Stopwatch() {
   };
 
   return div(
-    {},
     pre(
-      {
+      _attrs({
         style: "display: inline",
-      },
+      }),
       mkText(elapsed.map((v) => `${v.toFixed(1)} seconds`)),
     ),
-    button({ on_click: start }, mkText("Start")),
-    button({ on_click: stop }, mkText("Stop")),
-    button({ on_click: reset }, mkText("Reset")),
+    button(
+      _ref((e) => {
+        e.addEventListener("click", start);
+      }),
+      mkText("Start"),
+    ),
+    button(
+      _ref((e) => {
+        e.addEventListener("click", stop);
+      }),
+      mkText("Stop"),
+    ),
+    button(
+      _ref((e) => {
+        e.addEventListener("click", reset);
+      }),
+      mkText("Reset"),
+    ),
   );
 }

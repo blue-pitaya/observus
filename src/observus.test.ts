@@ -1,11 +1,5 @@
-import {
-  install,
-  mkElement,
-  mkSignal,
-  mkState,
-  mkText,
-  observeLazy,
-} from "./observus";
+import { _attrs, _ref, mkElement, mkText } from "./dom";
+import { mkSignal, mkState, observeLazy } from "./observus";
 
 test("lazy observe dont run callback on definition", () => {
   let called = false;
@@ -38,10 +32,10 @@ test("callback tree test 1", () => {
 test("1", () => {
   const element = mkElement(
     "div",
-    {
+    _attrs({
       className: "foo",
-    },
-    mkElement("span", {}, mkText("bar")),
+    }),
+    mkElement("span", mkText("bar")),
   );
 
   expect(element.tagName).toBe("DIV");
@@ -51,9 +45,12 @@ test("1", () => {
 
 test("2", () => {
   const classNameState = mkState("foo");
-  const element = mkElement("div", {
-    className: classNameState,
-  });
+  const element = mkElement(
+    "div",
+    _attrs({
+      className: classNameState,
+    }),
+  );
 
   expect(element.tagName).toBe("DIV");
   expect(element.className).toBe("foo");
@@ -63,22 +60,25 @@ test("3", () => {
   let called = false;
   mkElement(
     "div",
-    {
+    _attrs({
       className: "foo",
       on_created: () => {
         called = true;
       },
-    },
-    mkElement("span", {}, mkText("bar")),
+    }),
+    mkElement("span", mkText("bar")),
   );
 
   expect(called).toBe(true);
 });
 
 test("attrs handle numeric value", () => {
-  const element = mkElement("textarea", {
-    rows: 300,
-  });
+  const element = mkElement(
+    "textarea",
+    _attrs({
+      rows: 300,
+    }),
+  );
 
   expect(element.outerHTML).toBe('<textarea rows="300"></textarea>');
 });
@@ -106,10 +106,13 @@ test("attrs handle numeric value", () => {
 //});
 
 test("boolean attributes are handled", () => {
-  const element = mkElement("input", {
-    type: "text",
-    required: true,
-  });
+  const element = mkElement(
+    "input",
+    _attrs({
+      type: "text",
+      required: true,
+    }),
+  );
 
   const expected = document.createElement("input");
   expected.type = "text";
@@ -120,7 +123,7 @@ test("boolean attributes are handled", () => {
 
 test("text signal as element blueprint works", () => {
   const text = mkState("foo");
-  const element = mkElement("div", {}, mkText(text));
+  const element = mkElement("div", mkText(text));
 
   text.set("bar");
 
@@ -130,12 +133,10 @@ test("text signal as element blueprint works", () => {
 test("element signal works", () => {
   const state = mkState(true);
   const signal = state.map((v) => {
-    return v
-      ? mkElement("p", {}, mkText("foo"))
-      : mkElement("span", {}, mkText("bar"));
+    return v ? mkElement("p", mkText("foo")) : mkElement("span", mkText("bar"));
   });
 
-  const element = mkElement("div", {}, signal);
+  const element = mkElement("div", signal);
   expect(element.outerHTML).toBe("<div><p>foo</p></div>");
 
   state.set(false);
@@ -146,19 +147,15 @@ test("elements array signal works", () => {
   const state = mkState(true);
   const signal = state.map((v) => {
     return v
-      ? [
-          mkElement("p", {}, mkText("foo")),
-          mkElement("span", {}, mkText("bar")),
-        ]
-      : [mkElement("div", {}, mkText("baz"))];
+      ? [mkElement("p", mkText("foo")), mkElement("span", mkText("bar"))]
+      : [mkElement("div", mkText("baz"))];
   });
 
   const element = mkElement(
     "div",
-    {},
-    mkElement("p", {}, mkText("prev")),
+    mkElement("p", mkText("prev")),
     signal,
-    mkElement("p", {}, mkText("next")),
+    mkElement("p", mkText("next")),
   );
 
   expect(element.outerHTML).toBe(
@@ -175,16 +172,15 @@ test("elements array signal with strings works", () => {
   const state = mkState(true);
   const signal = state.map((v) => {
     return v
-      ? [mkElement("p", {}, mkText("foo")), mkText("bar")]
-      : [mkElement("div", {}, mkText("baz"))];
+      ? [mkElement("p", mkText("foo")), mkText("bar")]
+      : [mkElement("div", mkText("baz"))];
   });
 
   const element = mkElement(
     "div",
-    {},
-    mkElement("p", {}, mkText("prev")),
+    mkElement("p", mkText("prev")),
     signal,
-    mkElement("p", {}, mkText("next")),
+    mkElement("p", mkText("next")),
   );
 
   expect(element.outerHTML).toBe(
@@ -227,11 +223,12 @@ test("elements array signal with strings works", () => {
 
 test("setting event listener works", () => {
   let called = false;
-  const element = mkElement("div", {
-    on_click: () => {
+  const element = mkElement(
+    "div",
+    _ref((_e) => {
       called = true;
-    },
-  });
+    }),
+  );
   element.click();
 
   expect(called).toBe(true);

@@ -51,33 +51,26 @@ export function lazyElementsSignal<T>(
   signal: Signal<T[]>,
   getKey: (v: T) => string,
   createElement: (v: T) => Element,
-) {
-  const signedElements = mkState<{ id: string; element: Element }[]>([]);
+): Signal<Element[]> {
+  const memoElements: Record<string, Element> = {};
+  const elements = mkState<Element[]>([]);
 
   observe(signal, () => {
-    const models = signal.value;
-    const nextElements: { id: string; element: Element }[] = [];
+    const nextElements: Element[] = [];
 
-    models.forEach((model) => {
-      const modelId = getKey(model);
-      const matchingElement = signedElements.value.find((e) => e.id == modelId);
-      if (matchingElement) {
-        nextElements.push(matchingElement);
-      } else {
-        nextElements.push({ id: modelId, element: createElement(model) });
+    signal.value.forEach((model) => {
+      const id = getKey(model);
+
+      if (!(id in memoElements)) {
+        memoElements[id] = createElement(model);
       }
+
+      nextElements.push(memoElements[id]);
     });
 
-    //const removedElements = elements.value.filter(
-    //  (x) => !models.find((m) => getKey(m) == x.id),
-    //);
-
-    signedElements.set(nextElements);
-
-    //removedElements.forEach((el) => {
-    //  free(el.value);
-    //});
+    elements.set(nextElements);
+    //clear memo elements
   });
 
-  return signedElements.map((els) => els.map((el) => el.element));
+  return elements;
 }

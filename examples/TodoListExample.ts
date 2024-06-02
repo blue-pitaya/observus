@@ -1,4 +1,5 @@
-import { Signal, mkState, mkText } from "../src/observus";
+import { _attrs, _ref, mkText } from "../src/dom";
+import { Signal, mkState, notify } from "../src/observus";
 import { button, div, input, li, s, span, ul } from "../src/tags";
 
 interface TodoItem {
@@ -8,24 +9,23 @@ interface TodoItem {
 
 function TodoItem(item: Signal<TodoItem>, remove: () => void): HTMLElement {
   return li(
-    {},
     item.map((v) => {
       const text = mkText(v.name);
       //TODO: leak?
-      return v.done ? s({}, text) : span({}, text);
+      return v.done ? s(text) : span(text);
     }),
     button(
-      {
-        on_click: () => {
+      _ref((e) => {
+        e.addEventListener("click", () => {
           item.set({ ...item.value, done: true });
-        },
-      },
+        });
+      }),
       mkText("Done!"),
     ),
     button(
-      {
-        on_click: remove,
-      },
+      _ref((e) => {
+        e.addEventListener("click", remove);
+      }),
       mkText("Delete"),
     ),
   );
@@ -34,10 +34,9 @@ function TodoItem(item: Signal<TodoItem>, remove: () => void): HTMLElement {
 export function TodoList() {
   const itemsState = mkState<Array<Signal<TodoItem>>>([]); // state can be nested
 
-  const x = input({ type: "text" });
+  const x = input(_attrs({ type: "text" }));
 
   return div(
-    {},
     itemsState.map((items) => {
       const todos = items.map((item) =>
         TodoItem(item, () => {
@@ -45,21 +44,20 @@ export function TodoList() {
         }),
       );
 
-      return ul({}, ...todos);
+      return ul(...todos);
     }),
     div(
-      {},
       x,
       button(
-        {
-          on_click: () => {
-            itemsState.value.push(
-              mkState<TodoItem>({ name: x.value, done: false }),
-            );
-            //refresh
-            itemsState.set(itemsState.value);
-          },
-        },
+        _ref((e) => {
+          e.addEventListener("click", () => {
+            notify(itemsState, () => {
+              itemsState.value.push(
+                mkState<TodoItem>({ name: x.value, done: false }),
+              );
+            });
+          });
+        }),
         mkText("Add"),
       ),
     ),

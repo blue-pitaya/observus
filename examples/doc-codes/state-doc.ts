@@ -1,6 +1,6 @@
-import { State, mkState } from "../../src/observus";
+import { Signal, mkState } from "../../src/observus";
 
-const a: State<number> = mkState<number>(3);
+const a: Signal<number> = mkState<number>(3);
 const b = mkState(69);
 
 // update state
