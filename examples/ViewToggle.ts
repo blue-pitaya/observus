@@ -1,5 +1,4 @@
-import { _attrs, _on, mkText } from "../src/dom";
-import { mkState } from "../src/observus";
+import { mkState, _attrs, _on, mkText } from "../src/observus";
 import { button, div, span } from "../src/tags";
 
 export function ViewToggle() {

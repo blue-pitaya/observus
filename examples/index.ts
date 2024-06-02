@@ -3,7 +3,7 @@ import { Stopwatch } from "./Stopwatch";
 import { TextInputExample } from "./TextInputExample";
 import { TodoList } from "./TodoListExample";
 import { ViewToggle } from "./ViewToggle";
-import { install } from "../src/dom";
+import { install } from "../src/observus";
 
 install("stopwatch", (e: Element) => {
   e.appendChild(Stopwatch());

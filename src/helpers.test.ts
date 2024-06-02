@@ -1,6 +1,5 @@
-import { mkElement, mkText } from "./dom";
 import { lazyElementsSignal } from "./helpers";
-import { Signal, mkState, notify } from "./observus";
+import { Signal, mkState, notify, mkElement, mkText } from "./observus";
 
 interface SomeItem {
   id: string;

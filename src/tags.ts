@@ -1,6 +1,6 @@
 //Tags from typescript DOM lib 5.2.2 (typescript/lib/lib.dom.d.ts)
 
-import { ObSetter, mkElement } from "./dom";
+import { ObSetter, mkElement } from "./observus";
 
 type C = ObSetter[];
 

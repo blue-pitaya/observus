@@ -1,5 +1,4 @@
-import { _attrs, _ref, mkText } from "../src/dom";
-import { mkState } from "../src/observus";
+import { mkState,  _attrs, _ref, mkText  } from "../src/observus";
 import { button, div, input, p } from "../src/tags";
 
 export function TextInputExample() {

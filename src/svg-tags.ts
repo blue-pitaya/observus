@@ -1,6 +1,6 @@
 //List generated from scraped data from MDN
 
-import { ObSetter, mkSvgElement } from "./dom";
+import { ObSetter, mkSvgElement } from "./observus";
 
 type C = ObSetter[];
 

@@ -10,7 +10,6 @@ export default defineConfig({
     lib: {
       entry: {
         observus: resolve(__dirname, "src/observus.ts"),
-        dom: resolve(__dirname, "src/dom.ts"),
         helpers: resolve(__dirname, "src/helpers.ts"),
         tags: resolve(__dirname, "src/tags.ts"),
         "svg-tags": resolve(__dirname, "src/svg-tags.ts"),

@@ -1,5 +1,4 @@
-import { _attrs, _ref, mkText } from "../src/dom";
-import { Signal, mkState, notify } from "../src/observus";
+import { _attrs, _ref, mkText, Signal, mkState, notify } from "../src/observus";
 import { button, div, input, li, s, span, ul } from "../src/tags";
 
 interface TodoItem {

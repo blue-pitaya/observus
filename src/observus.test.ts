@@ -1,5 +1,12 @@
-import { _attrs, _ref, mkElement, mkText } from "./dom";
-import { mkSignal, mkState, observeLazy } from "./observus";
+import {
+  _attrs,
+  _ref,
+  mkElement,
+  mkText,
+  mkSignal,
+  mkState,
+  observeLazy,
+} from "./observus";
 
 test("lazy observe dont run callback on definition", () => {
   let called = false;
@@ -62,9 +69,9 @@ test("3", () => {
     "div",
     _attrs({
       className: "foo",
-      on_created: () => {
-        called = true;
-      },
+    }),
+    _ref(() => {
+      called = true;
     }),
     mkElement("span", mkText("bar")),
   );
