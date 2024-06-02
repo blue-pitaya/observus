@@ -1,4 +1,11 @@
-import { mkElement, mkSignal, mkState, mkText, observeLazy } from "./observus";
+import {
+  install,
+  mkElement,
+  mkSignal,
+  mkState,
+  mkText,
+  observeLazy,
+} from "./observus";
 
 test("lazy observe dont run callback on definition", () => {
   let called = false;
@@ -17,7 +24,7 @@ test("callback tree test 1", () => {
   const c = mkSignal([a, b], () => a.value + b.value + "c");
   const d = mkState("d");
   const e = mkSignal([c, d], () => c.value + d.value + "e");
-  const f = mkSignal([d], () => d.value + "f",);
+  const f = mkSignal([d], () => d.value + "f");
 
   console.log(a.value, b.value, c.value, d.value, e.value, f.value);
   a.set("A");
@@ -140,9 +147,9 @@ test("elements array signal works", () => {
   const signal = state.map((v) => {
     return v
       ? [
-        mkElement("p", {}, mkText("foo")),
-        mkElement("span", {}, mkText("bar")),
-      ]
+          mkElement("p", {}, mkText("foo")),
+          mkElement("span", {}, mkText("bar")),
+        ]
       : [mkElement("div", {}, mkText("baz"))];
   });
 

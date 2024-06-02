@@ -222,7 +222,7 @@ export function bind<A extends Element>(
   return element;
 }
 
-export function install(name: string, fn: <A extends Element>(e: A) => void) {
+export function install(name: string, fn: (e: Element) => void) {
   const elements = document.querySelectorAll("[ob-use]");
 
   elements.forEach((element) => {
