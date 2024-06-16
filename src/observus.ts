@@ -1,3 +1,5 @@
+// Version 0.9.0 by blue pitaya
+
 export interface Signal<A> {
   type: "Signal";
   value: A;
@@ -126,10 +128,15 @@ export function observeLazy(
 
 export function observe(
   deps: Signal<any> | Signal<any>[],
-  fn: () => void,
+  fn: (...x: any[]) => void,
 ): UnobserveFn {
   const unobserve = observeLazy(deps, fn);
-  fn();
+
+  if (isSignal(deps)) {
+    fn(deps.value);
+  } else {
+    fn(...deps.map((x) => x.value));
+  }
 
   return unobserve;
 }
@@ -291,4 +298,39 @@ export function install(name: string, fn: (e: Element) => void) {
       }
     }
   });
+}
+
+export function queryObId<E extends Element = Element>(
+  element: Element,
+  id: string,
+): E | null {
+  return element.querySelector<E>(`[ob-id='${id}']`);
+}
+
+export function bindVisibility(element: HTMLElement, signal: Signal<boolean>) {
+  observe(signal, () => {
+    if (signal.value) {
+      element.style.display = "block";
+    } else {
+      element.style.display = "none";
+    }
+  });
+}
+
+export function debounce(fn: () => void, timeout: number) {
+  let currentDebounceTaskId: number | null = null;
+
+  return () => {
+    if (currentDebounceTaskId !== null) {
+      clearTimeout(currentDebounceTaskId);
+    }
+
+    currentDebounceTaskId = window.setTimeout(() => {
+      try {
+        fn();
+      } finally {
+        currentDebounceTaskId = null;
+      }
+    }, timeout);
+  };
 }
